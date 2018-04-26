@@ -29,7 +29,7 @@ library(rgdal)
 library(sp)
 library(ggmap)
 
-source("library/makepdf.r")
+source("library/makepdf.r",encoding = "utf-8")
                                         #d <-  read.csv2("output/data.csv")
 
 
@@ -170,8 +170,8 @@ exploreData <- function(file="stoc_20161011.txt",fileDataClean="data.csv",fileDa
 ##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles donnnees
 ##' @return NULL
 ##' @author Romain Lorrilliere
-mainSTOCreporting <- function(file="stoc_20161011.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
-                              lastYear=NULL,importationData="3sessions",all=FALSE,local=TRUE,site="36",
+mainSTOCreporting <- function(file="stoc_20180425.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
+                              lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site="36",
                               seuilAbondanceAnneeAll=30,seuilAbondanceAnneeSite=10,
                               seuilAvorteDuree= 4,seuilAvorteEvenement=5,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188),
                               selectedSessionPlot=TRUE,carte = TRUE,abondanceRelative=TRUE ,variationAbondance=TRUE,variationAbondanceEspece=TRUE,
@@ -189,11 +189,11 @@ mainSTOCreporting <- function(file="stoc_20161011.txt",fileDataClean="data.csv",
     catlog(c("\n          fichier log:",fileLog,"\n"),fileLog)
 
 
-### DEBUG declaration parametres   
-###    file="stoc_20161011.txt";fileDataClean="data.csv" #####
-###   lastYear=2016;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
-###    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
-###    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
+## DEBUG declaration parametres   
+    file="stoc_20180425.txt";fileDataClean="data.csv" #####
+   lastYear=2017;importationData="clean";all=TRUE;local=TRUE;site=NULL #####
+    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
+    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
 
 
     
@@ -385,12 +385,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
                    seuilAvorteDuree= 3, seuilAvorteEvenement=4,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188)) {
 
 
-                                           fileLog="log.txt" #####
-                                           separateurData="\t" #####
-                                           decimalData="." #####
-                                           file = "stoc_20161011.txt" #####
-                                           lastYear = NULL #####
-                                       seuilAvorteDuree= 3; seuilAvorteEvenement=4;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188) ###
+                                   ##        fileLog="log.txt" #####
+                                           separateurData=";" #####
+                                   ##        decimalData="." #####
+                                   ##        file = "stoc_20180425.txt" #####
+                                   ##        lastYear = NULL #####
+                                   ##    seuilAvorteDuree= 3; seuilAvorteEvenement=4;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188) ###
     
     
     catlog(c("\n====================================\n              Suppression error files if exists\n==================================== \n\n"),fileLog)
@@ -540,10 +540,25 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     }
 
 
-
     
     catlog(c("\n====================================\n\n - Selection :\n------------------------------------\n"),fileLog)
     catlog(c("      -> colonne : [",paste(selectedColumns,collapse=","),"]\n"),fileLog)
+    
+    cnd <- colnames(d)
+    c_manquante <- selectedColumns[!(selectedColumns %in% cnd)]
+    if(length(c_manquante)>0) {
+         catlog("\n ATTENTION : colonne attendue non presente dans le tableau d'origine:\n",fileLog)
+         catlog(c(paste(c_manquante,collapse = " , "),"\n"),fileLog)
+         catlog("Ajout de ces colonnes avec des valeurs NA or id for cId_Data\n",fileLog)
+
+         d <- cbind(d,
+                   as.data.frame(matrix(NA,
+                                        nrow=nrow(d),
+                                        ncol=length(c_manquante))))
+         colnames(d)[(ncol(d)-length(c_manquante)+1):ncol(d)] <- c_manquante
+         if("cId_Data" %in% c_manquante) d$cId_Data <- 1:nrow(d)
+    }
+   #browser()
     d <- subset(d,select=selectedColumns)
 
 
@@ -616,7 +631,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     }
     ## d data printemps conservees
     d <- subset(d, MONTH >= 4 & MONTH <= 7)
-  
     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
     
 ### select morning hours
@@ -647,7 +661,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 
     ## de data non du matin 
     de <- subset(d, H < 5 | H > 13)
-    
+   
     if(nrow(de) > 0) {
      de.warning <- data.frame(error = "HEURE",commmentError="pas le matin",suppression= "ligne", subset(de,select = selectedColumns))
 
@@ -727,6 +741,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
         
         
         d <- subset(d,!is.na(ID_PROG))
+         
         catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
     } else {
         catlog(c(" --> OK\n"),fileLog)
@@ -776,6 +791,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 
     ## d data conserve avec NEW.ID_PROG valide 
     d <- subset(d,NEW.ID_PROG != "XX")
+     
     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
   
@@ -819,13 +835,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     d$PRECISION_LOC[is.na(d$LAT2)] <- "commune"
 
     d <- subset(d,select=selectedColumns)
-    
+     
 ### new column HABITAT
                                         #browser()
     catlog(c("\n====================================\n\n - Checking : Table 'species' complete\n------------------------------------\n"),fileLog)
 
     d <- merge(d,dsp,by="SP",all=TRUE)
-
     v.warningSp <- unique(subset(d,is.na(HABITAT_SP))$SP)
 
     if(length(v.warningSp)>0)
@@ -852,8 +867,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 
     ## exclusion des ligne dont l'espece est indetermine SPESPE 
     d <- subset(d,SP != "SPESPE")
-    
-    catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
+     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
 
     
@@ -885,7 +899,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 
     # d data baguage et controle conservees
     d <- subset(d,ACTION != "R")
-    
+     
     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
     
 ### select only good control condition
@@ -916,7 +930,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 
     ##  d data avec les bonnes condition et circonstance de controle
     d <- subset(d,(COND.REPR==8 & CIRC.REPR==20) | is.na(COND.REPR) & is.na(CIRC.REPR==20))
-    
+     
     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
     
@@ -960,8 +974,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
         catlog(c(" --> OK\n"),fileLog)
     }
 
-    
-  
+   
 
 ### research rings with several species
     catlog(c("\n====================================\n\n - Checking: Ring id for several species\n------------------------------------\n"),fileLog)
@@ -999,7 +1012,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     } else  {
         catlog(c(" --> OK\n"),fileLog) 
     }
-
+ 
     
 ### double ringing
     catlog(c("\n====================================\n\n - Checking: Double ringing\n------------------------------------\n"),fileLog)
@@ -1031,8 +1044,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
         catlog(c(" --> OK\n"),fileLog)
     }
 
-
-    
+## dd <- d
     
 ### age managing
     catlog(c("\n====================================\n\n - Checking: Age\n------------------------------------\n"),fileLog)
@@ -1233,7 +1245,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     d$SEXE2 <- ifelse(d$SEX.CONFIDENCE<.8,"U",d$SEXE)
 
 
-    
+     
 
 
 #### Mesure checking
@@ -1288,7 +1300,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     
 
     catlog(c("\n====================================\n\n - Checking: LP\n------------------------------------\n"),fileLog)
-    
+## dd <- d
     
     ## tLPmean table de reference des quantiles de longueur d'aile par espece et par age 
     tLPmean <- aggregate(LP~SP+AGE_first,data=d,quantile,c(.01,.5,.99))
@@ -1351,7 +1363,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     
     d <- d[order(d$DATE,d$NEW.ID_PROG,d$HEURE),]
 
-
+ 
     d$BG <- ifelse(is.na(d$BG),d$BAGUEUR,d$BG)
     d$BG <- ifelse(is.null(d$BG),d$BAGUEUR,d$BG)
       d$BG <- ifelse(d$BG=="",d$BAGUEUR,d$BG)
@@ -1417,6 +1429,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 ### at least 2 consecutive years
     catlog(c("\n====================================\n\n - Selection des programmes de au moins 2 ans: \n------------------------------------\n"),fileLog)
 
+    ## dd <- d
+
+    
     station1year <- subset(unique(subset(d,select=c(NEW.ID_PROG,FIRST.YEAR,YEAR,NB.YEARS))),NB.YEARS==1)
     l1y <- nrow(station1year)
      if(l1y>0)
@@ -1436,7 +1451,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     
 
 
-    
 
 ### curious ID number of mist nets
     catlog(c("\n====================================\n\n - Checking: ID number of mist nets \n------------------------------------\n"),fileLog)
@@ -1461,8 +1475,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
         catlog(c(" --> OK\n"),fileLog)
     }
     
-
-
+##dd <- d
 
 ### curious ID number of mist nets
     catlog(c("\n====================================\n\n - Estimation de FS.DEDUIT \n------------------------------------\n"),fileLog)
@@ -1479,7 +1492,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     
 
     catlog(c("\n====================================\n\n - Checking: FS \n------------------------------------\n"),fileLog)
-    
+     
     dnf <- subset(d,select=c("NEW.ID_PROG","YEAR","DATE","FS","FS.DEDUIT"))
     dnf <- na.omit(dnf)
     dnf <- unique(dnf)
@@ -1560,7 +1573,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
     dnf <- na.omit(dnf)
     dnf <- unique(dnf)
     dnf$DIFF <- dnf$FS.DEDUIT - dnf$FS
-    
+   # browser()
     m <- lm(FS.DEDUIT ~ FS, dnf)
     a = format(coef(m)[1], digits = 2) 
     b = format(coef(m)[2], digits = 2)
@@ -1613,6 +1626,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
 select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt",
                    seuilAvorteDuree= 3, seuilAvorteEvenement=4,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188)) {
 
+    ## fileDataClean="data3session.csv";fileLog="log.txt"
+    ## seuilAvorteDuree= 3; seuilAvorteEvenement=4;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
+    
    selectedColumns <- c("ACTION","CENTRE","BAGUE","DATE","YEAR","MONTH","JULIANDAY","HEURE","H",
                          "ESPECE","SP","SEXE","AGE","DEPT","LOCALITE",
                          "LIEUDIT","LP","MA","THEME.SESSION","THEME","BAGUEUR","BG",
@@ -1635,6 +1651,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     d <- merge(d,t.nbSession,by=c("NEW.ID_PROG","YEAR"),all.x = TRUE)
 
     altitude <- unique(subset(d,select=c("NEW.ID_PROG","ALTITUDE","BIOGEO")))
+    altitude$BIOGEO[is.na(altitude$BIOGEO)] <- ""
     rownames(altitude) <- altitude$NEW.ID_PROG
     altitude$ALTITUDE[is.na(altitude$ALTITUDE)] <- 0
     altitude$BIOGEO <- as.character(altitude$BIOGEO)
@@ -1659,6 +1676,8 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
         return(y)
 
     }
+
+    ## dd <- d
     
     t.nbSessionMostFreq <-  aggregate(t.nbSession$NB.SESSION,
                                       list(t.nbSession$NEW.ID_PROG),
@@ -1696,7 +1715,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
     catlog(c("\n====================================\n\n - Fiche sessions par station:\n------------------------------------\n"),fileLog)
 
-
+## dd <- d
 
     agg1 <- aggregate(BAGUE~NEW.ID_PROG+YEAR + JULIANDAY,data=d,length)
     colnames(agg1)[4] <- "nb_evenement"
@@ -1773,7 +1792,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
         
     }
 
-
+cat("\n")
 
     catlog(" 2)  Calcul des dates de reference pour les stations à 4 sessions\n",fileLog)
     
