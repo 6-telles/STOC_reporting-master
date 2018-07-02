@@ -170,8 +170,8 @@ exploreData <- function(file="stoc_20161011.txt",fileDataClean="data.csv",fileDa
 ##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles donnnees
 ##' @return NULL
 ##' @author Romain Lorrilliere
-mainSTOCreporting <- function(file="stoc_20180425.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
-                              lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site="36",
+mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
+                              lastYear=2017,importationData="brut",all=TRUE,local=TRUE,site=NULL,
                               seuilAbondanceAnneeAll=30,seuilAbondanceAnneeSite=10,
                               seuilAvorteDuree= 4,seuilAvorteEvenement=5,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188),
                               selectedSessionPlot=TRUE,carte = TRUE,abondanceRelative=TRUE ,variationAbondance=TRUE,variationAbondanceEspece=TRUE,
@@ -190,16 +190,16 @@ mainSTOCreporting <- function(file="stoc_20180425.txt",fileDataClean="data.csv",
 
 
 ## DEBUG declaration parametres   
-    file="stoc_20180425.txt";fileDataClean="data.csv" #####
-   lastYear=2017;importationData="clean";all=TRUE;local=TRUE;site=NULL #####
-    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
-    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
+##    file="stoc_20180616.txt";fileDataClean="data.csv" #####
+##   lastYear=2017;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
+##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
+##    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
 
 
     
     catlog(c("\n###############################################\n                   IMPORTATION\n###############################################\n"),fileLog)
     if(importationData == "brut") {
-        d <- import(file,lastYear,separateurData="\t",decimalData=".",fileDataClean,fileLog,
+        d <- import(file,lastYear,decimalData=".",fileDataClean,fileLog,
                     seuilAvorteDuree,seuilAvorteEvenement,seuilExclusionDelai,dateRefDefaut)
         d <- select3sessions(d,fileData3sessions,fileLog,
                              seuilAvorteDuree,seuilAvorteEvenement,seuilExclusionDelai,dateRefDefaut)
@@ -380,15 +380,15 @@ repertoireSite <-  function(d,site=NULL) {
 ##' @param dateRefDefaut 
 ##' @return 
 ##' @author Romain Lorrilliere
-import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
+import <- function(file="stoc_20161011.txt",lastYear=NULL,
                    decimalData=".",fileDataClean="data.csv",fileLog="log.txt",
                    seuilAvorteDuree= 3, seuilAvorteEvenement=4,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188)) {
 
 
                                    ##        fileLog="log.txt" #####
-                                           separateurData=";" #####
+                                   ##      
                                    ##        decimalData="." #####
-                                   ##        file = "stoc_20180425.txt" #####
+                                   ##        file = "stoc_20180616.txt" #####
                                    ##        lastYear = NULL #####
                                    ##    seuilAvorteDuree= 3; seuilAvorteEvenement=4;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188) ###
     
@@ -404,10 +404,10 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,separateurData="\t",
              file,"\n\n"),fileLog)
                                         # d: dataset
     file <- paste("donnees/",file,sep="")
-    d <-read.delim(file, header = TRUE, sep = separateurData ,dec=decimalData, na = "",stringsAsFactors=FALSE)
-
+    d <-read.delim(file, header = TRUE, sep = "\t" ,dec=decimalData, na = "",stringsAsFactors=FALSE)
+    if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = ";" ,dec=decimalData, na = "",stringsAsFactors=FALSE)
    
-    catlog(c("    => Initial number of lines: ",nrow(d),"\n"),fileLog)
+      catlog(c("    => Initial number of lines: ",nrow(d),"\n"),fileLog)
                                         #browser()
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
                                         #browser()
