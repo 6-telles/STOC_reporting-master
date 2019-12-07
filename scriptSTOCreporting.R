@@ -4009,3 +4009,100 @@ expPDF <- function(d,site=NULL,system="linux",fileLog="log.txt") {
 
     }
 }
+
+
+
+
+
+map_fr <- function(d,dcoord,last_year=NULL,group,
+                         column_longitude="X_CENTROID", column_latitude= "Y_CENTROID",
+                         column_year="ANNEE",column_group="ORIGINE",column_idsite = "INSEE",
+                         returnPlot=TRUE) {
+    library(lubridate)
+    library(ggplot2)
+    library(ggmap)
+    library(maps)
+    library(sf)
+    library(data.table)
+    library(dplyr)
+
+    d <- read.delim("output/data.csv",encoding="UTF-8",dec=",",sep=";")
+
+column_longitude="LON"; column_latitude= "LAT";  the_group = 291; column_year="YEAR";first_year =NULL; last_year = 2018;column_group="ID_PROG";column_idsite = "ID_PROG"
+#browser()
+
+    if(!is.null(column_longitude)) d$longitude <- d[,column_longitude,with=FALSE]
+    if(!is.null(column_latitude)) d$latitude <- d[,column_latitude,with=FALSE]
+    if(!is.null(column_year)) d$year <- d[,column_year,with=FALSE]
+    if(!is.null(column_group)) d$group <- d[,column_group,with=FALSE]
+    if(!is.null(column_idsite))  d$id_site <- d[,column_idsite,with=FALSE]
+
+    d <- subset(d,!is.na(DATE))
+    d <- subset(d,DATE != "")
+    d <- subset(d,latitude < 55)
+    d$group <- as.character(d$group)
+       the_group <- as.character(the_group)
+
+    if(is.null(last_year)) last_year <- max(d$year) else dsample <- subset(dsample,year <= last_year)
+    if(is.null(first_year)) first_year <- min(subset(d,group ==the_group)$year)
+
+
+dsample <- unique(d[,c("group","id_site","longitude","latitude","year")])
+
+    dsample$group2 <- ifelse(dsample$group == group,group,"autre")
+
+
+
+    dsample_y <- unique(subset(dsample,year %in% c(first_year : last_year),select=c("id_site","year","longitude","latitude","group","group2")))
+    i_exclu_y <- which(dsample_y$id_site %in% dsample_y$id_site[dsample_y$group2 == group] & dsample_y$group2 == "autre")
+    i_keep_y <- setdiff(1:nrow(dsample_y),i_exclu_y)
+    dsample_y <- dsample_y[i_keep_y,]
+
+
+ddsample_y <-  aggregate(year ~longitude + latitude + group2, data=dsample_y,length)
+
+    dsample_before <- unique(subset(dsample,!(year %in% c(first_year : last_year)),select=c("id_site","longitude","latitude","group","group2")))
+    dsample_before <- subset(dsample_before, !(id_site %in% dsample_y$id_site))
+    i_exclu_before<- which(dsample_before$id_site %in% dsample_before$id_site[dsample_before$group2 == group] & dsample_before$group2 == "autre")
+    i_keep_before <- setdiff(1:nrow(dsample_before),i_exclu_before)
+    dsample_before <- dsample_before[i_keep_before,]
+
+    dsample_y$last_year <- as.character(last_year)
+    dsample_before$last_year <- paste("avant",last_year)
+
+
+
+
+
+
+    dloc <- rbind(dsample_before,dsample_y)
+    dloc$group3 <- paste(dloc$group2,"-",dloc$last_year)
+
+    world1 <- sf::st_as_sf(map('world', plot = FALSE, fill = TRUE))
+    france <- sf::st_as_sf(map('france', plot = FALSE, fill = TRUE))
+
+
+
+    vecSize <- c(1.8,1.8,1.3,1.3)
+    vecShape <- c(19,19,1,1)
+    names(vecSize) <-  paste(rep(c(group,"autre"),each=2),"-",rep(c(last_year,paste("avant",last_year))))
+    names(vecShape) <-  paste(rep(c(group,"autre"),each=2),"-",rep(c(last_year,paste("avant",last_year))))
+
+    vecCol <- c("#b2182b","#f4a582","#2166ac","#92c5de")
+    names(vecCol) <- paste(rep(c(group,"autre"),each=2),"-",rep(c(last_year,paste("avant",last_year))))
+
+
+    gg <- ggplot()
+    gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)
+    gg <- gg + geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
+    gg <- gg + geom_point(data=dloc,aes(x=longitude, y=latitude,colour=group3),size=0.8)
+    gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
+    gg <- gg + scale_color_manual(values=vecCol)
+    gg <- gg + scale_size_manual(values=vecSize) + scale_shape_manual(values=vecShape)
+    gg <- gg + labs(colour="",alpha="",x="",y="",size="",shape="")
+
+
+    if(returnPlot) return(gg) else  print(gg)
+}
+
+
