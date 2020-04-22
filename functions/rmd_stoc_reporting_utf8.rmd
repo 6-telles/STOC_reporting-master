@@ -1,0 +1,175 @@
+---
+author: "Romain Lorrilliere\\thanks{\\href{mailto: romain.lorrilliere@mnhn.fr}{\\textit{romain.lorrilliere@mnhn.fr}}}, Pierre-Yves Henry\\thanks{\\href{mailto: pierre-yves.henry@mnhn.fr}{\\textit{pierre-yves.henry@mnhn.fr}}}, et le CRBPO\\thanks{Centre de Recherches sur la Biologie des Populations d'Oiseaux\\newline Museum National D'histoire Naturelle \\newline43 rue Buffon - Batiment 135, CP 135,75005 Paris \\newline \\url{http://crbpo.mnhn.fr/}}"
+date: "2020-04-04"
+params:
+ year: 
+ id_station: 
+output:
+  html_document:
+    df_print: paged
+    fig_height: 12
+    fig_width: 16
+    toc: yes
+    toc_depth: 3
+    toc_float:
+      collapsed: true
+      smooth_scroll: false
+    number_sections: true
+    code_folding: hide
+pdf_document:
+  toc: yes
+  toc_depth: '2'
+  tof: yes
+
+---
+
+
+
+
+---
+title: "\\vspace{5cm} \\Large Indicateurs de fonctionnement des populations d'oiseaux communs\\newline issus du Suivi Temporel des Oiseaux Communs par Capture (STOC-Capture)" 
+subtitle: "\\vspace{0.5cm}  \\Large Infographie actualisée pour la station 205, contenant les données du printemps 2020."
+date: "2020-04-04"
+
+---
+
+
+
+
+
+```r
+## List all packages needed
+
+
+vecPackage=c("data.table","devtools","dplyr","ggplot2","ggpubr","lubridate","reshape2","knitr")
+
+ip <- installed.packages()[,1]
+
+for(p in vecPackage) {
+    if (!(p %in% ip))
+        install.packages(pkgs=p,repos = "http://cran.univ-paris1.fr/",dependencies=TRUE)
+    require(p,character.only=TRUE)
+}
+```
+
+\newpage
+
+\tableofcontents
+\listoffigures 
+\clearpage
+
+\newpage
+
+# Introduction
+
+Afin de renseigner l'impact des actions de gestion sur le
+fonctionnement des espaces naturels, il est nécessaire de documenter
+l'évolution des populations de la faune et de la flore occupant les
+sites gérés. Les espèces à faibles effectifs sont souvent l'objet
+d'une attention particulière, car la disparition d'une espèce est une
+manifestation spectaculaire et irréversible de perte de la
+biodiversité. Cependant, on ne peut se contenter de l'étude des
+espèces les plus rares comme outil de décision en biologie de la
+conservation, ne serait-ce que parce que les espèces rares ne sont,
+par définition, pas représentatives de l'ensemble de la faune. Ainsi
+le protocole STOC-Capture basé sur un échantillonnage standardisé,
+répété à l'identique d'année en année aux mêmes endroits, a pour
+objectif de suivre les changements de fonctionnement des populations
+d'oiseaux communs au cours du temps, et entre les sites suivis.
+
+Le présent rapport infographique a pour but de caractériser au travers
+quelques indicateurs graphiques issus du STOC-Capture les variations
+temporelles d'état des populations d'oiseaux communs en contrastant
+des ensembles de stations. 
+
+Ces indicateurs ont vocation à documenter les variations, entre années
+et groupes de stations, de la taille des populations, de la production
+de jeunes (indicateur "Reproduction"), de la condition corporelle des
+individus, et du taux de retour des individus bagués l'année
+précédente (indicateur "Survie"). Ils peuvent varier en fonction de
+modifications locales (p. ex. gestion d'habitat sur le site,
+perturbations environnementales locales), mais aussi de perturbations
+à large échelle, telles que des anomalies climatiques
+(p. ex. printemps particulièrement chaud). Ainsi, l'intérêt des
+indicateurs locaux, comparant les fluctuations entre stations, est de
+permettre de séparer visuellement ce qui, parmi les changements d'état
+des populations d'oiseaux communs locales, semble dû à des
+perturbations locales (dans ce cas, le changement annuel marqué ne se
+retrouve pas sur les autres stations) versus ce qui semble dû à des
+perturbations globales (à plus large échelle, et dans ce cas le
+changement annuel marqué se retrouve également sur plusieurs autres
+stations, et est perçu au niveau des groupes références).
+
+## La standardisation
+
+Pour pouvoir comparer les valeurs d'indicateur entre stations il est
+indispensable de standardiser les données pour avoir un effort
+d'échantillonnage similaire. Nous exposons ci-après la procédure de
+standardisation appliquée dans l'état actuel de ces indicateurs
+(version 1.0). La méthode de calcul des indicateurs est susceptible de
+s'améliorer au fil des années et suivant les analyses, nous pouvons
+utiliser d'autres sélections de données avec d'autres critères.
+
+
+__NE déduisez PAS__ que les données que vous avez collectées mais qui ne
+sont pas utilisées ci-après sont inutiles (p. ex. des sessions
+supplémentaires, ou des longueurs de filet supérieures). La méthode de
+calcul des indicateurs est susceptible de s’améliorer au fil des
+années et suivant les analyses, nous pouvons utiliser d’autres
+sélections de données avec d’autres critères.
+
+ __SVP, ne changez pas vos protocoles de suivi.__ 
+ __Merci de les garder strictement à l’identique par rapport à vos
+ années antérieures__.
+ 
+
+
+### La sélection des sessions
+
+Dans la présente version, les indicateurs sont calculés sur les
+données des 3 principales sessions annuelles de capture par
+station. Si une de ces sessions n'a pas pu être réalisée, la valeur de
+l'indicateur n'est pas calculée pour l'année concernée (et donc
+n'apparaît pas dans les graphiques). De ces sessions ne sont
+conservées que les captures du matin c'est-à-dire de 4h à 15h. Le
+dernier niveau de standardisation considère la longueur de filets
+utilisée. Celle-ci étant variable au sein des différentes stations le
+nombre de captures a été ramené à une longueur théorique de 120 mètres
+de filets. Pour résumer, par printemps on à 3 sessions, au cours
+desquelles on étend 120 mètres de filet sur une matinée.
+
+__Si seules 3 sessions sont retenues, il demeure nécessaire que les
+protocoles de suivi des sites STOC-Capture restent inchangés (par
+exemple : si il y a des sessions supplémentaires, longueur de filet
+supérieures etc).__
+
+
+La sélection des 3 sessions est réalisée par une analyse des dates de session et des informations disponibles permettant d'évaluer leur validité pour le calcul des indicateurs. Cette sélection est réalisée de façon à optimiser deux critères de décision :
+
+- Les moyennes des dates de chacune des trois sessions doivent être les plus proches des dates moyennes de session à l'échelle nationale. Ainsi lorsque la station réalise annuellement plus de 3 sessions nous ne retenons que les sessions les plus proches des dates des 3 sessions les plus fréquentes à l'échelle nationale. Cette recherche tient compte du décalage qui est demandé aux stations de montagne et de la région méditerranéenne. 
+- Les dates des 3 sessions doivent, année après année, rester au sein de chaque station, le plus stable possible. Seules les sessions dont les dates sont éloignées de moins de 16 jours d'une des 3 dates de référence (calculées sur l'ensemble des dates des sessions) sont conservées. S'il y a plusieurs dates, nous choisissons la date la plus proche de la date de référence en favorisant une date de session valide (c'est à dire avec une durée de session et un nombre de captures qui semblent l'indiquer).
+
+ 
+
+Enfin, afin de permettre des comparaisons avec une référence nationale
+ad-hoc les stations ont été classées en trois groupes et seront
+comparées aux autres stations du même groupe: 
+
+- Terrestre : Stations dont moins de 50\% des individus capturés sont
+  des oiseaux paludicoles 
+- Aquatique : Stations dont plus de 50\% des individus capturés sont
+  des oiseaux paludicoles 
+- Rozo : Stations réalisant le protocole spécifique STOC-ROZO
+
+
+Ainsi la station est comparée au sous-ensemble des stations
+STOC-Capture du même type et qui ont été en activité en même temps que
+la sation étudiée (\textbf{figure \ref{carte}}).
+
+
+Le résultat du processus de selection est représenté sur la figure \ref{ses}.
+Ce processus sera ammené à être amélioré pour répondre au mieux aux
+cas particuliers. 
+
+
+
