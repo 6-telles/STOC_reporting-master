@@ -1,25 +1,21 @@
-output/
-data_raw/
-data_weather/
-data/
-moulinetteChiro/SaisieChiro_Result/
-moulinetteChiro/saisieChiroFileAttenteXLS/
-wc0.5/
 archive/
-data_csv-Copie/
-data_csv/
-log/
-donnees/
-makePDFs/
+data_archive/
+data_DB/
+output_log/
+output/
+output_rapport_pdf/
 
+
+
+
+
+sig/
 
 .Rproj.user
 .Rhistory
 *.html
 *.r~
-BCI2017.R
-monScript_capture.r
-sig/
+
 *.dbf
 *.prj
 *.qpj
@@ -41,8 +37,4 @@ sig/
 
 my*
 
-isd-history.csv
 
-f_coord_ROUTE.R
-
-myScript_trend.R
