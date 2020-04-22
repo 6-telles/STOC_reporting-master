@@ -43,8 +43,8 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 
     catlog(c("\n====================================\n              Suppression error files if exists\n==================================== \n\n"),fileLog)
-    if (file.exists("output/WARNING_DATA.csv")) {
-        file.remove("output/WARNING_DATA.csv")
+    if (file.exists("output_preparation/WARNING_DATA.csv")) {
+        file.remove("output_preparation/WARNING_DATA.csv")
         catlog(c("    -> WARNING_DATA.csv removed\n"),fileLog)
     } else {  catlog(c(" --> OK\n"),fileLog)}
 
@@ -143,12 +143,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'ACTION - NA'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'ACTION - NA'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -177,15 +177,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",la,"lines with a problem in the ACTION character encoding \n"),fileLog)
         catlog(c("They are different from \n 42 -> 'B' \n 43 -> 'C' \n 52 -> 'R' \n  \n"),fileLog)
-        catlog(c("==> Check WARNING_DATA.csv in output/ directory !!\n\n"),fileLog)
+        catlog(c("==> Check WARNING_DATA.csv in output_preparation/ directory !!\n\n"),fileLog)
         charToStringRaw <- function(X) paste(charToRaw(X),collapse =" ")
         warning.act <- data.frame(error ="encoding action",commmentError=paste("encoding action:",apply(data.frame(warning.act$ACTION),1,charToStringRaw)),suppression= "ligne",subset(warning.act,select=selectedColumns))
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(warning.act,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(warning.act,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(warning.act,"output/WARNING_DATA.csv",
+                                             write.table(warning.act,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -228,12 +228,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'YEAR - hors limite'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'YEAR - hors limite'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -253,12 +253,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'THEME - non STOC'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'THEME - non STOC'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -276,12 +276,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'MONTH - hors printemps'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'MONTH - hors printemps'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -301,12 +301,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'HEURE - non saisie'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'HEURE - non saisie'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -324,12 +324,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'HEURE - pas le matin'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'HEURE - pas le matin'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -378,21 +378,21 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lidNA <- nrow(du_idNA)
         catlog(c("\n !!! WARNING MESSAGE:",lidNA," location(s) without ID_PROG\n",
             "These data are exclude\n ==> ",
-            "Check warning_notID_PROG.csv in output/ dirctory !!\n"),fileLog)
+            "Check warning_notID_PROG.csv in output_preparation/ dirctory !!\n"),fileLog)
 
-        write.csv2(du_idNA,"output/warning_notID_PROG.csv",
+        write.csv2(du_idNA,"output_preparation/warning_notID_PROG.csv",
                    row.names=FALSE,quote=FALSE)
         d.warning.idNA <- data.frame(error = "ID_PROG null",commmentError="",suppression= "ligne", subset(d,is.na(ID_PROG),select = selectedColumns))
 
         lwiNA <- nrow(d.warning.idNA)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'ID null'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'ID null'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -437,12 +437,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'NEW.ID_PROG' !!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'NEW.ID_PROG' !!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -462,7 +462,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     tCont <- merge(tCont,tCont2,by=c("ID_PROG","YEAR"),all=TRUE)
     tCont <- tCont[order(tCont$ID_PROG,tCont$YEAR),]
 
-    write.csv(tCont,"output/tableContingenceStation.csv",row.names=FALSE)
+    write.csv(tCont,"output_preparation/tableContingenceStation.csv",row.names=FALSE)
 
        catlog(c("\n====================================\n\n - Add : Altitude and LON LAT\n------------------------------------\n"),fileLog)
 
@@ -513,12 +513,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'SP - SPESPE'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'SP - SPESPE'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -545,12 +545,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'ACTION - R'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'ACTION - R'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -574,12 +574,12 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'COND.REPR CIRC.REPR - diff 8 20'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'COND.REPR CIRC.REPR - diff 8 20'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -610,18 +610,18 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     ## if lb > 0 writing the ring ID in "warning_ring.csv"
     if(lb > 0)
     {
-        catlog(c(" !!! WARNING MESSAGE:",lb,"ring ID are wrong\n ==> Check warning_ring.csv in output/ dirctory !!\n"),fileLog)
+        catlog(c(" !!! WARNING MESSAGE:",lb,"ring ID are wrong\n ==> Check warning_ring.csv in output_preparation/ dirctory !!\n"),fileLog)
         t.warning.ring <-data.frame(BAGUE=warning.ring)
-        write.csv2(t.warning.ring,"output/warning_ring.csv",row.names=FALSE,na="",quote=FALSE)
+        write.csv2(t.warning.ring,"output_preparation/warning_ring.csv",row.names=FALSE,na="",quote=FALSE)
 
         d.warning.ring <- data.frame(error = "BAGUE",commmentError="",suppression= "ligne",subset(d,BAGUE %in% warning.ring & CENTRE == "FRP",select=selectedColumns))
-        catlog(c(nrow(d.warning.ring)," row deleted !!\n==> Check WARNING_DATA.csv in output/ dirctory !!\n"),fileLog)
+        catlog(c(nrow(d.warning.ring)," row deleted !!\n==> Check WARNING_DATA.csv in output_preparation/ dirctory !!\n"),fileLog)
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(d.warning.ring,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(d.warning.ring,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(d.warning.ring,"output/WARNING_DATA.csv",
+                                             write.table(d.warning.ring,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -653,15 +653,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     lsr <- length(warning.species_ring)
     if(lsr > 0)
     {
-        catlog(c(" !!! WARNING MESSAGE:",lsr,"ring ID correspond to several species\n ==> Check WARNING_DATA.csv in output/ directory !!\n\n"),fileLog)
+        catlog(c(" !!! WARNING MESSAGE:",lsr,"ring ID correspond to several species\n ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n\n"),fileLog)
         t.warning.species_ring <- data.frame(error = "bague sur plusieur espece", commmentError="",suppression= "ligne",subset(d,BAGUE %in% warning.species_ring, select=selectedColumns))
         t.warning.species_ring <- t.warning.species_ring[order(t.warning.species_ring$BAGUE,t.warning.species_ring$DATE),]
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(t.warning.species_ring,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(t.warning.species_ring,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(t.warning.species_ring,"output/WARNING_DATA.csv",
+                                             write.table(t.warning.species_ring,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -683,15 +683,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     if(ldr > 0)
     {
         catlog(c(" !!! WARNING MESSAGE:",ldr,"ring have been ringed at least two time\n"),fileLog)
-        catlog(c(" ==> Check WARNING_DATA.csv in output/ directory !!\n"),fileLog)
+        catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
         t.warning.d_ring <- data.frame(error = "double baguage", commmentError="",suppression= "ligne",subset(d,BAGUE %in% warning.d_ring,select = selectedColumns))
         t.warning.d_ring <- t.warning.d_ring[order(t.warning.d_ring$BAGUE,t.warning.d_ring$DATE),]
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(t.warning.d_ring,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(t.warning.d_ring,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(t.warning.d_ring,"output/WARNING_DATA.csv",
+                                             write.table(t.warning.d_ring,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -888,10 +888,10 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     } else {
         cat(" !!! WARNING MESSAGE:",
             lse,"induvidual(s) do(es) not have a single value of sex\n",
-            cat(" ==> Check warning_sex.csv in output/ directory !!\n\n"))
+            cat(" ==> Check warning_sex.csv in output_preparation/ directory !!\n\n"))
         t.warning.sex <- subset(d,BAGUE %in% t.sex$BAGUE[which(t.sex$SEX.CONFIDENCE<1)])
         t.warning.sex <- t.warning.sex[order(t.warning.sex$BAGUE,t.warning.sex$DATE),]
-        write.csv2(t.warning.sex,"output/warning_sex.csv",row.names=FALSE,na="",quote=FALSE)
+        write.csv2(t.warning.sex,"output_preparation/warning_sex.csv",row.names=FALSE,na="",quote=FALSE)
     }
 
 
@@ -933,15 +933,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     if(lma > 0)
     {
         catlog(c(" !!! WARNING MESSAGE:",lma,"MA seem aberrant\n"),fileLog)
-        catlog(c(" ==> Check WARNING_DATA.csv in output/ directory !!\n"),fileLog)
+        catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
         t.warning.ma <- data.frame(error = "MA aberrante", commmentError="",suppression= "Valeur ignoree", t.warning.ma)
         t.warning.ma <-  t.warning.ma[order( t.warning.ma$BAGUE, t.warning.ma$DATE),]
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table( t.warning.ma,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table( t.warning.ma,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table( t.warning.ma,"output/WARNING_DATA.csv",
+                                             write.table( t.warning.ma,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -983,15 +983,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     if(llp > 0)
     {
         catlog(c(" !!! WARNING MESSAGE:",llp,"LP seem aberrant\n"),fileLog)
-        catlog(c(" ==> Check WARNING_DATA.csv in output/ directory !!\n"),fileLog)
+        catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
         t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronquée", t.warning.lp)
         t.warning.lp <-  t.warning.ma[order( t.warning.lp$BAGUE, t.warning.lp$DATE),]
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table( t.warning.lp,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table( t.warning.lp,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table( t.warning.lp,"output/WARNING_DATA.csv",
+                                             write.table( t.warning.lp,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -1096,8 +1096,8 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",l1y," session with only 1 year\n",
             "These data are exclude\n ==> ",
-            "Check WARNING_station1year.csv in output/ dirctory  !!\n"),fileLog)
-        write.csv2(station1year,"output/WARNING_sation1year.csv",row.names=FALSE)
+            "Check WARNING_station1year.csv in output_preparation/ dirctory  !!\n"),fileLog)
+        write.csv2(station1year,"output_preparation/WARNING_sation1year.csv",row.names=FALSE)
 
         d <- subset(d,NB.YEARS > 1)
         catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
@@ -1118,14 +1118,14 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",ln," number of mist nets are strange\n",
             "These data are not exclude\n ==> ",
-            "Check WARNING_DATA.csv in output/ dirctory  error category : 'NF'!!\n"),fileLog)
+            "Check WARNING_DATA.csv in output_preparation/ dirctory  error category : 'NF'!!\n"),fileLog)
         catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(t.nets,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(t.nets,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(t.nets,"output/WARNING_DATA.csv",
+                                             write.table(t.nets,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -1169,18 +1169,18 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
         catlog(c(" !!! WARNING MESSAGE:",lnferror," value of FS are certainly errors\n",
             "These data are replaced by NA \n ==> ",
-            "Check warning_FS_ERROR.csv in output/ dirctory !!\n",
+            "Check warning_FS_ERROR.csv in output_preparation/ dirctory !!\n",
             "This corresponds to",nrow(d.warning.nf),"lines in the database\n",
-            "Check WARNING_DATA.csv in output/ dirctory  error category : 'FS ERROR'!!\n\n"),fileLog)
+            "Check WARNING_DATA.csv in output_preparation/ dirctory  error category : 'FS ERROR'!!\n\n"),fileLog)
 
-        write.csv2(dnf.error,"output/warning_FS_error.csv",
+        write.csv2(dnf.error,"output_preparation/warning_FS_error.csv",
                    row.names=FALSE,na="",quote=FALSE)
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(d.warning.nf,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(d.warning.nf,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(d.warning.nf,"output/WARNING_DATA.csv",
+                                             write.table(d.warning.nf,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -1209,19 +1209,19 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
         catlog(c(" !!! WARNING MESSAGE:",lnferror," value of FS are strange because very lower than FS.DEDUIT\n",
             "These data are not replaced \n ==> ",
-            "Check warning_FS_STRANGE.csv in output/ dirctory !!\n",
+            "Check warning_FS_STRANGE.csv in output_preparation/ dirctory !!\n",
             "This corresponds to",nrow(d.warning.nf),"lines in the database\n",
-            "Check WARNING_DATA.csv in output/ dirctory  error category : 'FS STRANGE'!!\n"),fileLog)
+            "Check WARNING_DATA.csv in output_preparation/ dirctory  error category : 'FS STRANGE'!!\n"),fileLog)
 
-        write.csv2(dnf.strange,"output/warning_FS_strange.csv",
+        write.csv2(dnf.strange,"output_preparation/warning_FS_strange.csv",
                    row.names=FALSE,na="",quote=FALSE)
 
 
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(d.warning.nf,"output/WARNING_DATA.csv",
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(d.warning.nf,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(d.warning.nf,"output/WARNING_DATA.csv",
+                                             write.table(d.warning.nf,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
@@ -1242,7 +1242,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     ggnf1 <- ggnf1 + geom_smooth(method="lm",colour="red")+ annotate("text", label = text.equa,x=80,y=400,size=3,colour="red")+ geom_point()
     ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les données",colour="Années"))
 
-    ggfile <- paste("output/estimationFS_all.png",sep="")
+    ggfile <- paste("output_preparation/estimationFS_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
     ggsave(ggfile,ggnf1)
     catlog(c("\n"),fileLog)
@@ -1250,17 +1250,17 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
     ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les données",x="FS.DEDUIT - FS"))
 
-    ggfile <- paste("output/estimationFS_histograme_all.png",sep="")
+    ggfile <- paste("output_preparation/estimationFS_histograme_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
     ggsave(ggfile,ggnf2)
     catlog(c("\n"),fileLog)
 
-    d$FS.OUTPUT <- ifelse(d$YEAR<=2010,d$FS.DEDUIT,ifelse(is.na(d$FS),d$FS.DEDUIT,d$FS))
+    d$FS.OUTPUT_PREPARATION <- ifelse(d$YEAR<=2010,d$FS.DEDUIT,ifelse(is.na(d$FS),d$FS.DEDUIT,d$FS))
 
 
 
-    write.csv2(d,paste("output/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
-    catlog(paste("\n====================================\n\nDATA exported :output/",fileDataClean,"\n",sep=""),fileLog)
+    write.csv2(d,paste("output_preparation/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
+    catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
@@ -1337,7 +1337,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     t.nbSession$DIFF.NB.SESSION <- t.nbSession$NB.SESSION - t.nbSession$NB.SESSION.MAX_MOST.FREQUENT
 
 
-    write.csv2(t.nbSession,"output/nbSessionYear.csv",row.names=FALSE)
+    write.csv2(t.nbSession,"output_preparation/nbSessionYear.csv",row.names=FALSE)
 
 
     t.warning.session <- subset(t.nbSession,abs(DIFF.NB.SESSION)>1.5)
@@ -1349,10 +1349,10 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
             lpbs,
             "site have a very variable number of sessions\n",
             "These data are not exclude\n ==> ",
-            "Check warning_nbSession.csv in output/ dirctory !!\n"),fileLog)
+            "Check warning_nbSession.csv in output_preparation/ dirctory !!\n"),fileLog)
         t.warning.session <- t.warning.session[order(
             t.warning.session$NEW.ID_PROG,t.warning.session$YEAR),]
-        write.csv2(t.warning.session,"output/warning_nbSession.csv",
+        write.csv2(t.warning.session,"output_preparation/warning_nbSession.csv",
                    row.names=FALSE,na="",quote=FALSE)
         catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
@@ -1596,12 +1596,12 @@ cat("\n")
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'SESSION - not selected'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'SESSION - not selected'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -1625,12 +1625,12 @@ cat("\n")
         lwiNA <- nrow(de.warning)
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output/ dirctory error category : 'SESSION - not selected'!!\n"),fileLog)
-        if (file.exists("output/WARNING_DATA.csv"))
-            write.table(de.warning,"output/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'SESSION - not selected'!!\n"),fileLog)
+        if (file.exists("output_preparation/WARNING_DATA.csv"))
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
@@ -1661,7 +1661,7 @@ cat("\n")
     ggnf1 <- ggnf1 + geom_smooth(method="lm")+ annotate("text", label = text.equa,x=80,y=400,size=3,colour="red")+ geom_point()
     ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des data STOC",colour="Habitat"))
 
-    ggfile <- paste("output/estimationFS_STOC.png",sep="")
+    ggfile <- paste("output_preparation/estimationFS_STOC.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
     ggsave(ggfile,ggnf1)
     catlog(c("\n"),fileLog)
@@ -1669,7 +1669,7 @@ cat("\n")
 
     ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour les DATA STOC",x="FS.DEDUIT - FS"))
 
-    ggfile <- paste("output/estimationFS_histogrameSTOC.png",sep="")
+    ggfile <- paste("output_preparation/estimationFS_histogrameSTOC.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
     ggsave(ggfile,ggnf2)
     catlog(c("\n"),fileLog)
@@ -1681,8 +1681,8 @@ cat("\n")
 
 
 
-    write.csv2(d,paste("output/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
-    catlog(paste("\n====================================\n\nDATA exported :output/",fileDataClean,"\n",sep=""),fileLog)
+    write.csv2(d,paste("output_preparation/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
+    catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
