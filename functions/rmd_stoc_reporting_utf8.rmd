@@ -1,56 +1,79 @@
+
 ---
-author: "Romain Lorrilliere\\thanks{\\href{mailto: romain.lorrilliere@mnhn.fr}{\\textit{romain.lorrilliere@mnhn.fr}}}, Pierre-Yves Henry\\thanks{\\href{mailto: pierre-yves.henry@mnhn.fr}{\\textit{pierre-yves.henry@mnhn.fr}}}, et le CRBPO\\thanks{Centre de Recherches sur la Biologie des Populations d'Oiseaux\\newline Museum National D'histoire Naturelle \\newline43 rue Buffon - Batiment 135, CP 135,75005 Paris \\newline \\url{http://crbpo.mnhn.fr/}}"
-date: "2020-04-04"
-params:
- year: 
- id_station: 
+author: Romain Lorrilliere\thanks{\href{mailto:romain.lorrilliere@mnhn.fr}{\textit{romain.lorrilliere@mnhn.fr}}}, Pierre-Yves Henry\thanks{\href{mailto:pierre-yves.henry@mnhn.fr}{\textit{pierre-yves.henry@mnhn.fr}}} & le CRBPO\thanks{Centre de Recherches sur la Biologie des Populations d'Oiseaux\newline Museum National D'histoire Naturelle \newline 43 rue Buffon - Bâtiment 135, CP 135,75005 Paris \newline \url{http://crbpo.mnhn.fr/}}
+date: "`r format(Sys.time(), '%d/%m/%Y')`"
 output:
-  html_document:
-    df_print: paged
-    fig_height: 12
-    fig_width: 16
-    toc: yes
-    toc_depth: 3
-    toc_float:
-      collapsed: true
-      smooth_scroll: false
-    number_sections: true
-    code_folding: hide
-pdf_document:
-  toc: yes
-  toc_depth: '2'
-  tof: yes
-
+  pdf_document:
+    toc: false
+    toc_depth: 2
+    fig_caption: true
+params: 
+   set_rep: "C:/git/STOC_reporting/"
+   set_file_data: "data_DB/data3session.csv"
+   set_fileLog: NULL
+   set_site: "100a"
+   set_year: 2015
+   set_save_fig: FALSE 
 ---
 
+```{r setup, include=FALSE}
 
+knitr::opts_chunk$set(echo =FALSE, eval=TRUE, message = FALSE, warning = FALSE)
 
-
----
-title: "\\vspace{5cm} \\Large Indicateurs de fonctionnement des populations d'oiseaux communs\\newline issus du Suivi Temporel des Oiseaux Communs par Capture (STOC-Capture)" 
-subtitle: "\\vspace{0.5cm}  \\Large Infographie actualisée pour la station 205, contenant les données du printemps 2020."
-date: "2020-04-04"
-
----
-
-
-
-
-
-```r
-## List all packages needed
-
-
-vecPackage=c("data.table","devtools","dplyr","ggplot2","ggpubr","lubridate","reshape2","knitr")
-
-ip <- installed.packages()[,1]
-
-for(p in vecPackage) {
-    if (!(p %in% ip))
-        install.packages(pkgs=p,repos = "http://cran.univ-paris1.fr/",dependencies=TRUE)
-    require(p,character.only=TRUE)
-}
 ```
+
+
+```{r param_test}
+
+rep <- params$set_rep
+file_data <- params$set_file_data
+fileLog <- params$set_fileLog
+site <- params$set_site
+year <- params$set_year
+save.fig <- params$set_save_fig
+
+```
+
+
+```{r title}
+
+title_r <- paste0("\\vspace{5cm} \\Large Indicateurs de fonctionnement des populations d'oiseaux communs\\newline issus du Suivi Temporel des Oiseaux Communs par Capture (STOC-Capture)")
+subtitle_r <-  paste0("\\vspace{0.5cm}  \\Large Infographie actualisée pour la station ",site," contenant les données du printemps ",year,"\\vspace{1cm}")
+
+```
+
+
+
+```{r changeRep,include =FALSE }
+
+knitr::opts_knit$set(root.dir = rep)
+
+```
+
+
+
+---
+title: `r title_r`
+subtitle: `r subtitle_r`
+---
+
+
+
+```{r source}
+file_source <- paste0("functions/fun_indicateurs_local_latin1.r")
+source(file_source)
+```
+
+
+
+```{r import}
+file_full <- paste0(rep,file_data)
+d <- read.csv2(file_full,stringsAsFactors=FALSE)
+hab <- subset(d,NEW.ID_PROG == site)[1,"HABITAT"]
+
+hab_txt <- tolower(hab)
+ 
+``` 
 
 \newpage
 
@@ -100,6 +123,34 @@ perturbations globales (à plus large échelle, et dans ce cas le
 changement annuel marqué se retrouve également sur plusieurs autres
 stations, et est perçu au niveau des groupes références).
 
+# Méthode
+
+## La station `r site`
+
+Enfin, afin de permettre des comparaisons avec une référence nationale
+ad-hoc les stations ont été classées en trois groupes et seront
+comparées aux autres stations du même groupe: 
+
+- Terrestre : Stations dont moins de 50\% des individus capturés sont
+  des oiseaux paludicoles 
+- Aquatique : Stations dont plus de 50\% des individus capturés sont
+  des oiseaux paludicoles 
+- Rozo : Stations réalisant le protocole spécifique STOC-ROZO
+
+
+Ainsi la station `r site` de type `r hab_txt` est comparée au sous-ensemble des stations
+STOC-Capture du type `r hab_txt` et qui ont été en activité en même
+temps (\textbf{figure \ref{fig:carte}}). 
+
+
+
+```{r fig.carte, eval=TRUE,fig.align = 'center', out.width='100%',fig.cap=paste("\\label{fig:carte}Localisation de la stations",site,"en rouge et des stations de même type en dégradé de bleu présentant le nombre d'année disponible de données pour la comparaison. Les stations noté par un petit cercle vide sont les stations qui ne sont pas utilisable pour réalisé la référence nationale"),fig.scap="La localisation de la station"} 
+
+carteStation(site=site,d=d,add_local=FALSE,fileLog=fileLog,print.fig=TRUE,save.fig=save.fig,add_title=FALSE)
+ 
+```
+
+
 ## La standardisation
 
 Pour pouvoir comparer les valeurs d'indicateur entre stations il est
@@ -124,7 +175,7 @@ sélections de données avec d’autres critères.
  
 
 
-### La sélection des sessions
+## La sélection des sessions
 
 Dans la présente version, les indicateurs sont calculés sur les
 données des 3 principales sessions annuelles de capture par
@@ -144,32 +195,291 @@ exemple : si il y a des sessions supplémentaires, longueur de filet
 supérieures etc).__
 
 
-La sélection des 3 sessions est réalisée par une analyse des dates de session et des informations disponibles permettant d'évaluer leur validité pour le calcul des indicateurs. Cette sélection est réalisée de façon à optimiser deux critères de décision :
+La sélection des 3 sessions est réalisée par une analyse des dates de
+session et des informations disponibles permettant d'évaluer leur
+validité pour le calcul des indicateurs. Cette sélection est réalisée
+de façon à optimiser deux critères de décision :
 
-- Les moyennes des dates de chacune des trois sessions doivent être les plus proches des dates moyennes de session à l'échelle nationale. Ainsi lorsque la station réalise annuellement plus de 3 sessions nous ne retenons que les sessions les plus proches des dates des 3 sessions les plus fréquentes à l'échelle nationale. Cette recherche tient compte du décalage qui est demandé aux stations de montagne et de la région méditerranéenne. 
-- Les dates des 3 sessions doivent, année après année, rester au sein de chaque station, le plus stable possible. Seules les sessions dont les dates sont éloignées de moins de 16 jours d'une des 3 dates de référence (calculées sur l'ensemble des dates des sessions) sont conservées. S'il y a plusieurs dates, nous choisissons la date la plus proche de la date de référence en favorisant une date de session valide (c'est à dire avec une durée de session et un nombre de captures qui semblent l'indiquer).
+- Les moyennes des dates de chacune des trois sessions doivent être
+les plus proches des dates moyennes de session à l'échelle
+nationale. Ainsi lorsque la station réalise annuellement plus de 3
+sessions nous ne retenons que les sessions les plus proches des dates
+des 3 sessions les plus fréquentes à l'échelle nationale. Cette
+recherche tient compte du décalage qui est demandé aux stations de
+montagne et de la région méditerranéenne. 
+- Les dates des 3 sessions doivent, année après année, rester au sein
+  de chaque station, le plus stable possible. Seules les sessions dont
+  les dates sont éloignées de moins de 16 jours d'une des 3 dates de
+  référence (calculées sur l'ensemble des dates des sessions) sont
+  conservées. S'il y a plusieurs dates, nous choisissons la date la
+  plus proche de la date de référence en favorisant une date de
+  session valide (c'est à dire avec une durée de session et un nombre
+  de captures qui semblent l'indiquer). 
 
- 
-
-Enfin, afin de permettre des comparaisons avec une référence nationale
-ad-hoc les stations ont été classées en trois groupes et seront
-comparées aux autres stations du même groupe: 
-
-- Terrestre : Stations dont moins de 50\% des individus capturés sont
-  des oiseaux paludicoles 
-- Aquatique : Stations dont plus de 50\% des individus capturés sont
-  des oiseaux paludicoles 
-- Rozo : Stations réalisant le protocole spécifique STOC-ROZO
-
-
-Ainsi la station est comparée au sous-ensemble des stations
-STOC-Capture du même type et qui ont été en activité en même temps que
-la sation étudiée (\textbf{figure \ref{carte}}).
-
-
-Le résultat du processus de selection est représenté sur la figure \ref{ses}.
+Le résultat du processus de selection des session est représenté sur la figure \ref{fig:ses}.
 Ce processus sera ammené à être amélioré pour répondre au mieux aux
 cas particuliers. 
+ 
+ 
+
+```{r fig.ses, eval=TRUE,fig.align = "center", out.width="50%",fig.cap=paste("\\label{fig:ses}Les dates des 3 sessions selectionées pour la station ",site,". Les lignes pointillées représentent les dates de références pour la station calculer à partir des dates locales de session. Les points de couleur (bleu pour la session 1, violet pour la session 2 et rouge pour la session 3) indiquent les sessions concervées pour l'analyse des indicateurs. En couleur pale est indiqué la distribution des dates des sessions à l'échelle nationale (en gras la médiane, en trait fin les 50\\% autour de la médiane et en ombré la zone des 95\\%",sep=""),fig.scap="Les sessions"}
+
+selectedSession.site(site=site,d=d,fileLog=fileLog,print.fig=TRUE,save.fig=save.fig,add_title=FALSE)
+ 
+```
+
+
+\clearpage
 
 
 
+## Condition de calcul des indicateurs
+Des seuils conditionnant le calcul des indicateurs ont été établi
+comme suit :
+
+
+Indicateur  | Seuils appliqués
+------------- | -------------
+Indice d'abondance  | Au moins 5 individus adultes par stations et par
+                    | an 
+Indice de condition corporelle | Nombre médian par station d'individus
+                               | supérieur à 10 sur l'ensemble des
+							   |  années de suivi 
+Indice de taux de retour | Nombre médian par station d'individus
+                         | supérieur à 10  sur l'ensemble des années
+						 |  de suivi
+
+
+
+
+# Variation temporelle des indicateurs
+
+## Comment interpréter  les variations des indicateurs ?
+
+Les figures de variation des indicateurs sont toutes construites sur
+le même modèle.
+
+Ainsi les valeurs des indicateurs pour la station son représentées en
+orange et se superposent aux valeurs de références nationales en
+bleues.
+
+
+Les références national sont des quantiles, nous en utilisons trois,
+la médiane, et les intervalles contenant 50\% et 95\% des valeurs des
+indicateurs.
+
+
+- La médiane est la valeur de l'indicateur qui sépare les sites en
+   deux sous-ensembles de taille d'échantillon égale (c'est-à-dire un
+   même nombre de stations).
+- L'intervalle des 50\% représente l'intervalle qui contient 50\%  des
+  valeurs de l'indicateur  autour de la médiane.
+- L'intervalle des 95\% représente l'intervalle qui contient 95\% des
+  valeurs de l'indicateur  autour de la médiane.
+- Au-delà des 95\% il reste donc 5\% des données que l'on considére
+  comme les valeurs extrêmes et que nous ne représentons pas.
+  
+  
+  
+Pour chaque indicateur nous proposons dans un premier temps un indice
+pour l'ensemble de la communauté d'espèce, regroupant toutes les
+espèces quelle que soit leur abondance. Cette analyse à l'échelle de
+la communauté est pertinente biologiquement, mais aussi
+statistiquement car plus de la moitié des espèces sont capturées en
+trop faible nombre pour permettre de caractériser leur fonctionnement
+spécifique. 
+
+Dans un second temps nous proposons un second indice spécifiques,
+calculé pour les espèces pour lesquelles c'est possible (en fonction
+les seuils évoqués plus haut). Ce second indicateur qui permet une
+analyse à un niveau resserré, a pour but d'identifier lorsque c'est le
+cas, la ou les espéce(s) responsable(s) de ce que l'on observe au
+niveau de la communauté d'espèce. 
+
+\newpage
+
+# Résultats
+
+
+
+## La communauté capturée
+
+Ici nous considérons comme espèces communes les espèces qui
+sont capturè dans au moins 20\% des stations STOC-Capture. La
+figure __\ref{fig:com}__ reprèsente la constitution de la
+communauté locale en espéces communes et leurs effectifs
+capturé. Elle montre également la distribution des captures de
+ces espéces dans les stations de même type (parmi les stations
+qui capturent l'espéce). Ainsi la figure __\ref{fig:com}__
+permet d'apprécier les paricularités de la station.
+
+
+
+
+```{r fig.com, eval=TRUE,fig.align = 'center', out.width='90%',fig.cap=paste("\\label{fig:com}Nombre d'individus capturés par espèce sur la station ",site,", les points dégradés du jaune au rouge (correspondant aux années) représentent les données locales, les boxplots bleus représentent la distribution nationale de ces captures sur les stations de type ",hab_txt," et qui capturent l'espèce.",sep=""),fig.scap="Les espèces capturées"}
+
+speciesRelativeAbund.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+\newpage
+
+\clearpage
+
+## L'indice d'abondance des adultes
+Les variations locales d'abondance des populations quantifient la
+résultante démographique (tailles de population) des effets combinés
+des variations de survie, de reproduction et de dispersion entre
+années. 
+
+Nous présentons dans un premier temps, l'indice d'abondance pour la
+communauté d'espèces qui renseigne sur la santé globale de la
+communauté au sein de chaque groupe (__figure \ref{fig:ab}__). Puis
+dans un second temps, les variations d'abondance de différentes
+espéces sont présentées indépendamment. Cet indice d'abondance est
+calculé à partir des captures d'adultes et est standardisé pour
+correspondre aux captures sur 3 sessions par 120 métres de filets. 
+
+
+
+```{r fig.ab, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:ab}Variation du nombre d'adultes capturés pour le station ",site," comparé aux STOC-Capture de type ",hab_txt,sep=""),fig.scap="Variation du nombre d'adultes"}
+
+abundanceYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+\clearpage
+
+```{r fig.absp, eval=TRUE,fig.align = 'center', out.width='50%',fig.cap=paste("\\label{fig:absp}Variation du nombre d'adultes capturés pour le station",site," comparé aux STOC-Capture de type ",hab_txt,sep=""),fig.scap="Variation du nombre d'adultes par espèce"}
+
+abundanceSpeciesYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
+
+```
+
+
+\clearpage
+
+
+## L'indice de productivté
+
+L'indice de productivité correspond au nombre de jeunes produits par
+adulte. Il refléte les effets des conditions environnementales sur la
+reproduction et la survie jusqu'à l'envol (à nombre d'adultes égaux,
+donc indépendamment des fluctuations de taille de population
+reproductrice). Il renseigne ainsi sur la variation de la qualité de
+l'habitat pour la reproduction des passereaux communs.
+
+
+Cet indice de productivité est défini comme le nombre de jeunes divisé
+par le nombre d'adultes (capturés sur les 3 sessions) tel que :
+
+$$
+ \frac{N_{juv}}{N_{Ad}}
+$$
+
+Enfin cet indice est tout d'abord calculé de façon globale pour la
+communauté en regroupant les espéces selon le typ e de migration
+qu'elles réalisent ("_Court_" pour à courte distance, "_Long_" pour à
+longue distance, voir la figure __\ref{fig:prod}__). En effet, la
+productivité documentée étant très différente entre les migrateurs à
+longue distance (transsahariens) et les autres espéces, l'indice de
+productivité est calculé séparément pour ces deux groupes
+d'espèces. Dans un second temps l'indice de productivité est calculé
+de manière spécifique  (figure __\ref{fig:prodsp}__).
+
+
+
+
+```{r fig.prod, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:prod}Variation de la productivité globale pour la station ",site,". La productivité est calculée comme suit: $\\frac{N_{juv}}{N_{juv}+N_{ad}}$. En bleu, la variation nationale des quantiles de l'indicateur (médiane, 50\\% et 95\\%) pour les station de type ",hab_txt,", en rouge la variation pour la station ",site,".",sep=""),fig.scap="Variation de la productivité"}
+
+productivityYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+
+
+
+\clearpage
+
+```{r fig.prodsp, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:prodsp}Variation de la productivité des principales espèces pour la station ",site,". La productivité est calculée comme suit: $\\frac{N_{juv}}{N_{juv}+N_{ad}}$. En bleu, la variation nationale des quantiles de l'indicateur (médiane, 50\\% et 95\\%) pour les station de type ",hab_txt,", en rouge la variation pour la station ",site,".",sep=""),fig.scap="Variation de la productivité par espèce"}
+
+productivityYearSpecies.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+\clearpage
+
+
+
+\subsection{L'indice de la condition corporelle}
+
+En période de reproduction, la condition corporelle des individus est principalement influencée par les conditions météorologiques et la disponibilité alimentaire au cours des semaines et mois passés, qui affectent la ration alimentaire des jeunes et la condition physique des adultes qui nourrissent les jeunes. \\
+
+Dans un premier temps, l'indice est calculé de façon globale pour la communauté regroupant les individus selon deux classes d'âge (juvénile et adulte ; (figure __\ref{bc}__) tel que la condition corporelle d'un individu $i$ est la standardisation de sa masse $M_i$ par la masse de moyenne $\bar{m}$  de son espéce $s$ et de sa classe d'âge $a$ comme suit: 
+
+$$
+\textit{Condition corporelle}_i =  \frac{M_{i,s,a} -\bar{m}_{s,a}}{\bar{m}_{s,a}}
+$$
+
+Puis l'indice spécifique (figure __\ref{bcsp}__) est calculé tel que la condition corporelle spécifique d'un individu $i$ est la standardisation de sa masse $M_i$ par l'écart de sa longueur d'aile pliée ($LP$) $\breve{l}$  à la taille moyenne de la LP $\bar{l}$ de son espéce $s$ et de sa classe d'âge $a$ comme suit: 
+
+$$
+ \textit{Condition corporelle spécifique}_i = \frac{M_{i,s,a}}{\breve{l}_{s,a}}
+$$
+
+$$
+ \breve{l}_{s,a} = \frac{L_{i,s,a}-\bar{l}_{s,a}}{\bar{l}_{s,a}}+1
+$$
+
+
+
+
+
+```{r fig.bc, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:bc}Variation de la condition corporelle globale pour la station ",site,".En bleu, la variation des quantiles de l'indicateur national (médiane, 50\\% et 95\\%) pour les station de type ",hab_txt,", en rouge et orange la variation pour la station ",site,sep=""),fig.scap="Variation de la condition corporelle globale"}
+
+#bodyCondition.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+\clearpage
+
+```{r fig.bcsp, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:bcsp}Variation de la condition corporelle spécifique des principales espèces  pour la station ",site,".En bleu, la variation des quantiles de l'indicateur national (médiane, 50\\% et 95\\%) pour les station de type ",hab_txt,", en rouge et orange la variation pour la station ",site,sep=""),fig.scap="Variation de la condition corporelle pour les principales espèces"}
+
+#bodyCondition.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+
+\clearpage
+
+
+## Indice de survie locale : le taux de retour entre années
+
+Le taux de retour des individus correspond à la proportion des
+individus capturés l'année $t$ qui sont recapturés à l'année $t+1$. Il
+est la résultante de la survie annuelle et de la fidélité des
+individus au site de reproduction (pour les adultes) ou au site de
+naissance (pour les juvéniles).
+
+
+En premier lieu est présenté l'indice du taux de retour calculé pour
+la communauté d'espèces, par classe d'âge et type de migration
+(figure __\ref{fig:rr}__) et puis le taux de retour spécifique est
+présenté (figure __\ref{fig:rrsp}__). Pour le calcul de cet
+indicateur il faut au moins 2 ans de suivis consécutifs.
+
+
+```{r fig.rr, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:rr}Variation du taux de retour sur l'ensemble des espéces pour la station ",site,". Le taux de retour de l'année $t$ est la proportion des individus qui sont revus à l'année $t+1$. En bleu, la variation des quantiles de l'indicateur national (médiane, 50\\% et 95\\%) des stations de type ",hab_txt,", en rouge et orange la variation pour la station ",site,".",sep=""),fig.scap="Variation du taux de retour global"}
+
+#returnRate.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+```
+
+\clearpage
+
+```{r fig.rrsp, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:rrsp}Variation du taux de retour pour les principales espèces pour la station ",site,". Le taux de retour de l'année $t$ est la proportion des individus qui sont revus à l'année $t+1$. En bleu, la variation des quantiles de l'indicateur national (médiane, 50\\% et 95\\%) des stations de type ",hab_txt,", en rouge et orange la variation pour la station ",site,".",sep=""),fig.scap="Variation du taux de retour pour les principales espèces]"}
+
+#returnRate.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+
+
+```
