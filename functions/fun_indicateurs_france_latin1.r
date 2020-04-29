@@ -1,7 +1,7 @@
 
-source("functions/fun_generic.r")
+source("functions/fun_generic_latin1.r")
 
-speciesRelativeAbund.allV2 <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
+speciesRelativeAbund.all <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
     require(ggplot2)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
     habitatDemande <-  habitat
