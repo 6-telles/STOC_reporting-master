@@ -1,29 +1,7 @@
 
-####################################################################
-###                                                              ###
-###                      STOC reporting                          ###
-###                                                              ###
-####################################################################
 
+source("functions/fun_generic_latin1.r")
 
-## instalation automatiques des packages
-
-
-if("STOC_reporting" %in% dir()) setwd("STOC_reporting")
-
-#source("library/makepdf.r",encoding = "UTF-8")
-
-
-
-
-
-############################################################################################################
-############################################################################################################
-
-###                                     ENFIN DES GRAPHES                                               ###
-
-############################################################################################################
-############################################################################################################
 
 ##' .. content for \description{} (no empty lines) ..
 ##'
@@ -38,7 +16,7 @@ if("STOC_reporting" %in% dir()) setwd("STOC_reporting")
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
-selectedSession.site <- function(site=NULL,d,fileLog=NULL,print=TRUE,save=FALSE,aggAllSession,aggSession,aggSessionRef) {
+selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,aggAllSession=NULL,aggSession=NULL,aggSessionRef=NULL,add_title=TRUE) {
 
 
 ##    fileSave <- "output/summarySession.csv"  #####
@@ -48,13 +26,21 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print=TRUE,save=FALSE,
 ##    fileSave <- "output/SessionReference.csv" #####
 ##    aggSessionRef <-  read.csv2(fileSave,stringsAsFactors=FALSE) #####
 
+    if(is.null(aggAllSession)) {
+        fileSave <- "data_France/summarySession.csv"
+        aggAllSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
+    }
 
-    fileSave <- "data_France/summarySession.csv"
-    aggAllSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
-    fileSave <- "data_France/historicSession.csv"
-    aggSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
-    fileSave <- "data_France/SessionReference.csv"
-    aggSessionRef <-  read.csv2(fileSave,stringsAsFactors=FALSE)
+    if(is.null(aggSession)) {
+        fileSave <- "data_France/historicSession.csv"
+        aggSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
+    }
+
+    if(is.null(aggSessionRef)) {
+        fileSave <- "data_France/SessionReference.csv"
+        aggSessionRef <-  read.csv2(fileSave,stringsAsFactors=FALSE)
+    }
+
 
     aggSession$SESSION <- as.character(aggSession$SESSION)
     aggSessionRef$SESSION <- as.character(aggSessionRef$SESSION)
@@ -80,7 +66,9 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print=TRUE,save=FALSE,
         vdate <- as.numeric(format(as.Date(paste(2000,vdate,sep="-")),"%j"))-1
         vdate <- sort(c(vdate,aggSessionRef.s$JULIANDAY))
 
-       gg <- ggplot(data=aggAllSession,aes(x=YEAR,y=med,colour=SESSION,fill=SESSION,group=paste(SESSION)))
+        if(add_title) title_txt <- paste("Date des sessions selectionnées pour la station",ss) else title_txt <- ""
+
+        gg <- ggplot(data=aggAllSession,aes(x=YEAR,y=med,colour=SESSION,fill=SESSION,group=paste(SESSION)))
         gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour=NA)
         gg <- gg + geom_line(aes(y=CIquart_inf),size=0.6,alpha=.3)+ geom_line(aes(y=CIquart_sup),size=0.6,alpha=.3)
 
@@ -93,16 +81,16 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print=TRUE,save=FALSE,
         gg <- gg + scale_shape_manual(values=c("TRUE"=19,"FALSE"=8),label=c("TRUE"="oui","FALSE"="non"),breaks=c(TRUE,FALSE),name="Session valide")
         gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
         gg <- gg + scale_y_continuous(labels = function(x) format(as.Date(as.character(x), "%j"), "%d-%m"),breaks = vdate)
-        gg <- gg + labs(title=paste("Date des sessions selectionnées pour la station",ss),x="Année",y="Date")
+        gg <- gg + labs(title=title_txt,x="Année",y="Date")
 
-        if(save) {
+        if(save.fig) {
         ggfile <- paste("output/",ss,"/session_",ss,".png",sep="")
         catlog(c("Check",ggfile,":"),fileLog)
         ggsave(ggfile,gg)
         catlog(c("\n"),fileLog)
         }
 
-        if(print) print(gg)
+        if(print.fig) print(gg)
 
 #        cmdMove <- paste("cp ",ggfile," output/lesSessions",sep="")
 #        system(cmdMove)
@@ -125,7 +113,7 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print=TRUE,save=FALSE,
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
-carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print=TRUE,save=FALSE) {
+carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,add_title=TRUE) {
 
     require(rgdal)
     require(ggmap)
@@ -138,6 +126,7 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print=TRUE,save
 
     france <- map_data("france")
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
+    if(save.fig) checkRepertories(site)
 
     coordAll <- aggregate(cbind(d$LON,d$LAT) ~ d$NEW.ID_PROG,data=d,mean)
     colnames(coordAll)[2:3] <- c("LON","LAT")
@@ -199,13 +188,14 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print=TRUE,save
                          legend.position=NULL)
 
 
+        if(add_title) title_txt <- paste0("Localisation de la station ",ss,"\n et des ",nbs," stations de référence de type ",h, "\n suivies entre ",fy," et ",ly) else title_txt <- ""
         gg <- ggplot()
         gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)+ geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
         gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
         gg <- gg + geom_point(data = coordAll2,aes(LON,LAT),shape=1,size=1,colour="black")
         gg <- gg + geom_point(data = dcoord.s,aes(LON,LAT), colour="red",size=4)
         gg <- gg + geom_point(data = coordAllh, aes(LON,LAT,colour=DUREE),size=2,shape=19)
-        gg <- gg + labs(x="",y="",title=paste("Localisation de la station ",ss,"\n et des ",nbs," stations de référence de type ",h, "\n suivies entre ",fy," et ",ly,sep=""))
+        gg <- gg + labs(x="",y="",title=title_txt)
         gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'années\nde suivi",limits=c(min_duree,max_duree))
 
         if(add_local) {
@@ -229,20 +219,18 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print=TRUE,save
             ggloc <- ggloc + labs(x="",y="",title="",fy," et ",ly,sep="")
             ggloc <- ggloc +   scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="",limits=c(min_duree,max_duree),guide =FALSE)
 
-            gg <- grid.arrange(gg,ggloc,ncol = 1, nrow = 2,heights=c(4,3))
+          }
 
-        }
-
-
-        if(save) {
+        if(save.fig) {
+            if(add_local) g <- arrangeGrob(gg,ggloc,ncol = 1, nrow = 2,heights=c(4,3)) else g <- gg
             ggfile <- paste("output/",ss,"/carte_",ss,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
-            ggsave(ggfile,gg)#,height = 10.5,width = 13)
+            ggsave(ggfile,g)#,height = 10.5,width = 13)
             catlog(c("\n"),fileLog)
         }
 
-    if(print)
-        print(gg)
+        if(print.fig)
+            if(add_local)  grid.arrange(gg,ggloc,ncol = 1, nrow = 2,heights=c(4,3)) else print(gg)
     }
 }
 
@@ -250,20 +238,16 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print=TRUE,save
 
 
 
+speciesRelativeAbund.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE) {
 
-
-
-speciesRelativeAbund.siteV2 <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE) {
     require(ggplot2)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
 
     if(is.null(site)) {
         site <- sort(unique(d$NEW.ID_PROG))
         habitats <- unique(d$HABITAT)
-
     } else {
         habitats <- unique(subset(d,NEW.ID_PROG %in% site)$HABITAT)
-
     }
 
     ggTableH <- read.csv2("data_France/quantileEspece_France_.csv",stringsAsFactors=FALSE)
@@ -297,12 +281,13 @@ speciesRelativeAbund.siteV2 <- function(d,site=NULL,fileLog="log.txt",print.fig=
 
         ggTable <- merge(ggTableS,ggTableHab,by="SP")
 
+        if(add_title) title_txt <- paste("Site ",ss) else title_txt <- ""
 
         gg <- ggplot(ggTable,aes(x=reorder(SP, (1-ABUNDsite75)),y=ABUND50))
         gg <- gg + geom_linerange(aes(ymin=ABUND025,ymax=ABUND975),colour="#08306b",alpha=.5)
         gg <- gg + geom_crossbar(aes(ymin = ABUND25, ymax = ABUND75), width = 0.5,alpha=.5,colour="#08306b",fill="#08306b")
         gg <- gg + theme(axis.text.x  = element_text(angle=90,vjust=.5))
-        gg <- gg + labs(x="Espèces caputrées dans au moins 1/5 des stations",y="Nombre d'individus capturés par an",title=paste("Site ",ss))
+        gg <- gg + labs(x="Espèces caputrées dans au moins 1/5 des stations",y="Nombre d'individus capturés par an",title=title_txt)
         gg <- gg + geom_jitter(data=ggNbCapt,aes(x=SP,y=ABUND,colour=YEAR),size=2,alpha=.9,width = .2)
         gg <- gg +scale_y_log10(breaks=c(0,1,2,5,10,20,50,100,200,400))
         gg <- gg + scale_colour_continuous(low="#ffa200",high="#960000")#"#07307b","#0c5ef6","#c10909","#ea5d18"
@@ -318,60 +303,11 @@ speciesRelativeAbund.siteV2 <- function(d,site=NULL,fileLog="log.txt",print.fig=
         }
     } # END  for(ss in site)
 
-} ### END speciesRelativeAbund.siteV2
+} ### END speciesRelativeAbund.site
 
 
 
 
-speciesRelativeAbund.all <- function(d,habitat=NULL) {
-    require(ggplot2)
-    dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
-    tableCouleur <- subset(dsp,!is.na(TOP),select=c("SP","COLOUR"))
-    dh <- d
-    if(!is.null(habitat)) dh <- subset(dh,HABITAT == habitat)
-
-    du.bague <- unique(subset(dh,select=c("SP","BAGUE","HABITAT")))
-    t.contingency.sp <- t(table(du.bague$SP,du.bague$HABITAT))
-    t.contRelat <- t(t.contingency.sp / rowSums(t.contingency.sp))
-
-    nbH <- ncol(t.contRelat)
-    vech <- colnames(t.contRelat)
-
-    for(h in 1:nbH) {
-        th <- data.frame(SP = rownames(t.contRelat),HABITAT = colnames(t.contRelat)[h], RELATIVE_ABUNDANCE = t.contRelat[,h])
-        v <- sort(th$RELATIVE_ABUNDANCE,decreasing = TRUE)
-        vcum <- cumsum(v)
-                                        #vseuil <- v[min(min(which(trunc(vcum*100)>=66))+1)]
-                                        #th[th$RELATIVE_ABUNDANCE<vseuil,"SP"] <- NA
-        if (h==1) ggTable <- th else ggTable <-  rbind(ggTable,th)
-    }
-
-    if(nbH>1) {
-        th <- data.frame(SP = rownames(t.contRelat),HABITAT = "Tout", RELATIVE_ABUNDANCE = rowSums(t.contRelat)/nbH)
-        v <- sort(th$RELATIVE_ABUNDANCE,decreasing = TRUE)
-        vcum <- cumsum(v)
-        vseuil <- v[min(min(which(trunc(vcum*100)>=66))+1)]
-        th[th$RELATIVE_ABUNDANCE<vseuil,"SP"] <- NA
-        ggTable <-  rbind(ggTable,th)
-    }
-
-    ggTable <- ggTable[order(ggTable$RELATIVE_ABUNDANCE,decreasing = TRUE),]
-
-
-    tc <- subset(tableCouleur,SP %in% unique(ggTable$SP))
-    gg <- ggplot(data=ggTable,aes(x="",y = RELATIVE_ABUNDANCE, fill = SP)) + facet_wrap(~HABITAT,nrow=2)+
-        geom_bar(width = 1,stat = "identity") +
-        coord_polar(theta="y",start=pi/2) +
-        scale_fill_manual(values = tc$COLOUR,breaks=tc$SP,name="Code espèces") +
-        labs(x="",y="") +  ggtitle("Abondance relative")
-
-    ggfile <- paste("output/France/abondanceRelative_France",habitat,".png",sep="")
-    catlog(c("Check",ggfile,":"),fileLog)
-    ggsave(ggfile,gg)
-    catlog(c("\n"),fileLog)
-
-
-}
 
 
 ##' .. content for \description{} (no empty lines) ..
@@ -383,7 +319,7 @@ speciesRelativeAbund.all <- function(d,habitat=NULL) {
 ##' @param fileLog
 ##' @return
 ##' @author Romain Lorrilliere
-speciesRelativeAbund.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE) {
+speciesRelativeAbund.site_grgr<- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE) {
     require(ggplot2)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
     tableCouleur <- subset(dsp,select=c("SP","COLOUR"))
@@ -467,7 +403,7 @@ speciesRelativeAbund.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TR
 ##' @return NULL
 ##' @author Romain Lorrilliere
 
-abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE)
+abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
 {
                                         # site="9"
 
@@ -539,8 +475,6 @@ abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.tx
             colnames(aggTable)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
 
             aggTableNat <- rbind(aggTableNat,data.frame(SP=sp,aggTable))
-
-
         }
     }
                                         #print(site)
@@ -601,6 +535,8 @@ abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.tx
 
             aggTable.s <- rbind(aggTable.s,ggSite)
 
+            if(add_title) title_txt <- paste(sp,": Station ",ss,sep="") else title_txt <- ""
+
             gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
 
             gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA)
@@ -613,9 +549,9 @@ abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.tx
             gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(hab,paste("Station:",ss))),guide=FALSE)
             gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
             gg <- gg + theme(legend.position="none")
-              gg <- gg + labs(list(title=paste(sp,": Station ",ss,sep=""),
+              gg <- gg + labs(title=title_txt,
                                  x="Année",y="Nombre d'individus adultes capturés",
-                                 colour=""))
+                                 colour="")
 
             if(print.fig) print(gg)
 
@@ -636,7 +572,7 @@ abundanceSpeciesYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.tx
 
 
 
-abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE)
+abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 {
     require(ggplot2)
 
@@ -725,6 +661,8 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
         aggTable.s <- rbind(aggTable.s,ggSite)
         aggTable.s$HABITAT <- as.character(aggTable.s$HABITAT)
 
+        if(add_title) title_txt <- paste("Captures toutes espèces\npour la station ",ss,sep="") else title_txt <- ""
+
         gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
         gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA)
         gg <- gg + geom_line(aes(y=CIquart_inf),size=0.6,alpha=.6)+ geom_line(aes(y=CIquart_sup,color=HABITAT),size=0.6,alpha=.6)
@@ -737,7 +675,7 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
         ##gg <- gg + scale_colour_manual(breaks=c(habitat,paste("Station:",ss)),values =c("#db6363","#08306b"))
         ##gg <- gg + scale_fill_manual(breaks=c(habitat,paste("Station:",ss)),values =c("#db6363","#08306b"),guide=FALSE)
         gg <- gg + theme(legend.position="none")
-        gg <- gg + labs(title=paste("Captures toutes espèces\npour la station ",ss,sep=""),
+        gg <- gg + labs(title=title_txt,
                              x="Année",y="Nombre d'individus adultes capturés",
                              colour="")
         ##  browser()                                        #
@@ -767,7 +705,7 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
 
 
 
-productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE)
+productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 {
     require(ggplot2)
                                         #site="193"
@@ -788,12 +726,7 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
 
                                         #   ggTable.abund <- na.omit(ggTable.abund)
 
-    aggTable <- aggregate(PROD ~ (YEAR + HABITAT+MIGRATION), data= dNb, quantile,c(0.025,.25,0.5,.75,0.975))
-    aggTable <- data.frame(aggTable[,1:3],aggTable[4][[1]][,1:5])
-    colnames(aggTable)[4:8] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
-
-
-
+    aggTable <- read.csv2("data_France/Productivite_all_.csv")
 
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
 
@@ -814,6 +747,7 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
                              CIinf=NA,CIquart_inf=NA,med=tSite$PROD,CIquart_sup=NA,CIsup=NA)
         aggTable.s <- rbind(aggTable.s,ggSite)
 
+        if(add_title) title_txt <-  paste("Station",ss) else title_txt <- ""
 
         gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))+ facet_grid(~MIGRATION)
         gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA )
@@ -823,32 +757,36 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
         gg <- gg + scale_x_continuous(breaks=pretty_breaks())
         gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))))
         gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))),guide=FALSE)
-        gg <- gg + labs(list(title=paste("Station",ss),
+        gg <- gg + labs(list(title=title_txt,
                              x="Année",y="Productivité: Njuv/(Nad + Njuv)"))
         gg <- gg + theme(legend.position="none")
 
-      ggfile <- paste("output/",ss,"/Productivite_Site_",ss,".png",sep="")
-        catlog(c("Check",ggfile,":"),fileLog)
-        ggsave(ggfile,gg)
-        catlog(c("\n"),fileLog)
+        if(print.fig) print(gg)
+
+
+        if(save.fig) {
+            ggfile <- paste("output/",ss,"/Productivite_Site_",ss,".png",sep="")
+            catlog(c("Check",ggfile,":"),fileLog)
+            ggsave(ggfile,gg)
+            catlog(c("\n"),fileLog)
+        }
+
+
+    }# END for(ss in site)
 
 
 
-    }
-
-
-
-}
+}### END productivityYear.site
 
 
 
 
-productivityYearSpecies.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE)
+productivityYearSpecies.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 {
     require(ggplot2)
 ### d <- read.csv2("output/data.csv",stringsAsFactors=FALSE)
 
-    tabSpeQuant <- read.csv2("output/quantileEspece_France_.csv",stringsAsFactors=FALSE)
+    tabSpeQuant <- read.csv2("data_france/quantileEspece_France_.csv",stringsAsFactors=FALSE)
 
 
     dp <- unique(subset(d,AGE_first != "VOL" & MIGRATION != "",select = c("ESPECE","MIGRATION","YEAR","NEW.ID_PROG","HABITAT","BAGUE","AGE_first")))
@@ -909,6 +847,9 @@ productivityYearSpecies.site <- function(d,site=NULL,fileLog="log.txt",print.fig
                                  CIinf=NA,CIquart_inf=NA,med=dNbsite$PROD,CIquart_sup=NA,CIsup=NA)
             aggTable.s <- rbind(aggTable.h,ggSite)
 
+              if(add_title) title_txt <-  paste("Station",ss) else title_txt <- ""
+
+
             gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))+ facet_wrap(~ESPECE)
             gg <- gg + geom_ribbon(aes(x=YEAR,ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA )
             gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
@@ -917,15 +858,19 @@ productivityYearSpecies.site <- function(d,site=NULL,fileLog="log.txt",print.fig
             gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(hh,paste("Station:",ss))))
             gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(hh,paste("Station:",ss))),guide=FALSE)
             gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
-            gg <- gg + labs(list(title=paste("Station",ss),
+            gg <- gg + labs(list(title=title_txt,
                                  x="Année",y="Productivité: Njuv/(Nad + Njuv)"))
             gg <- gg + theme(legend.position="none")
 
-            ggfile <- paste("output/",ss,"/Productivite_Espece_Site_",ss,".png",sep="")
-            catlog(c("Check",ggfile,":"),fileLog)
-            ggsave(ggfile,gg)
-            catlog(c("\n"),fileLog)
+            if(print.fig) print(gg)
 
+
+            if(save.fig) {
+                ggfile <- paste("output/",ss,"/Productivite_Espece_Site_",ss,".png",sep="")
+                catlog(c("Check",ggfile,":"),fileLog)
+                ggsave(ggfile,gg)
+                catlog(c("\n"),fileLog)
+            }
         }
     }
 
@@ -936,7 +881,7 @@ productivityYearSpecies.site <- function(d,site=NULL,fileLog="log.txt",print.fig
 
 
 
-bodyCondition.site<- function(d,site=NULL,limitTime=TRUE,seuilAbondanceAnnee=30,seuilAbondanceAnneeSite=10,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE)
+bodyCondition.site<- function(d,site=NULL,limitTime=TRUE,seuilAbondanceAnnee=30,seuilAbondanceAnneeSite=10,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 {
     ##   site="193"
     ##   d <- read.csv2("output/data.csv")
@@ -986,7 +931,7 @@ bodyCondition.site<- function(d,site=NULL,limitTime=TRUE,seuilAbondanceAnnee=30,
 
     for(s in site) {
                                         #  print(s)
-
+############################### ICI
                                         #   catlog(c("site:",s,"\n"),fileLog)
         tSite <- subset(d,AGE_first!="VOL" & NEW.ID_PROG==s & (!(is.na(MA_borne))) & (!(is.na(LP_indice_borne))))
         if(nrow(tSite)>10) {
