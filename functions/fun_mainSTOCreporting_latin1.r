@@ -183,7 +183,7 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
             if(selectedSessionPlot) {
                 catlog(c("\nSESSIONS SELECTIONNEES\n"),fileLog)
-                selectedSession.site(site=site,d,fileLog,print.fig=TRUE,save.fig=FALSE)
+                selectedSession.site(site=site,d,fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
 
             if(dataStation) {
@@ -193,44 +193,44 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
             if(carte) {
                 catlog(c("\nCARTE\n"),fileLog)
-                carteStation(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                carteStation(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=TRUE,add_title=FALSE)
             }
 
             if(abondanceRelative){
                 catlog(c("\nABONDANCE RELATIVE\n"),fileLog)
-                speciesRelativeAbund.siteV2(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                speciesRelativeAbund.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
 
             if(variationAbondance) {
                 catlog(c("\nVARIATION ABONDANCE\n"),fileLog)
 ######################
-                abundanceYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                abundanceYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
 ####################
             }
 
             if(variationAbondanceEspece) {
                 catlog(c("\nVARIATION ABONDANCE PAR ESPECE\n"),fileLog)
-                abundanceSpeciesYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                abundanceSpeciesYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
 
             if(productivite) {
                 catlog(c("\nPRODUCTIVITEE\n"),fileLog)
-                productivityYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                productivityYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
 
             if(productiviteEspece) {
                 catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
-                productivityYearSpecies.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE)
+                productivityYearSpecies.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
 
 
             if(conditionCorporelle) {
                 catlog(c("\nCONDITION CORPORELLE\n"),fileLog)
-                bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog)
+                bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
             }
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
-                returnRate.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog)
+                returnRate.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
             }
         } # END ELSE if(pdf_.local)
 
