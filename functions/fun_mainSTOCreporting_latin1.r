@@ -36,13 +36,13 @@
 ##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles donnnees
 ##' @return NULL
 ##' @author Romain Lorrilliere
-mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
+mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
                               lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site=NULL,
                               seuilAbondanceAnneeAll=30,seuilAbondanceAnneeSite=10,
                               seuilAvorteDuree= 4,seuilAvorteEvenement=5,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188),
                               selectedSessionPlot=TRUE,carte = TRUE,abondanceRelative=TRUE ,variationAbondance=TRUE,variationAbondanceEspece=TRUE,
                               productivite=TRUE,productiviteEspece=TRUE,conditionCorporelle=TRUE,retour=TRUE,
-                              pdf_france=TRUE,dataStation=TRUE,onlyNew=FALSE) {
+                              pdf_france=FALSE,dataStation=TRUE,onlyNew=TRUE,pdf_local=TRUE) {
     start <- Sys.time()    ## heure de demarage est utiliser comme identifiant par defaut
 
     fileLog <- paste("log",format(start, "%Y-%m-%d_%HH%M"),".txt",sep="")
@@ -57,12 +57,12 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
     ## ##############################
     ## DEBUG declaration parametres
-    file="stoc_20180616.txt";fileDataClean="data.csv" #####
-    lastYear=2018;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
-    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
-    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
-    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
-
+## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
+##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
+##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
+##    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
+##    selectedSessionPlot=TRUE;abondanceRelative=TRUE;variationAbondance=TRUE;productivite=TRUE;conditionCoporelle=TRUE;retour=TRUE #####
+##
     ## #######################
 
     if(is.null(lastYear)) {
@@ -79,16 +79,16 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
                              seuilAvorteDuree,seuilAvorteEvenement,seuilExclusionDelai,dateRefDefaut)
     } else {
         if(importationData == "clean") {
-            file <- paste("output/",fileDataClean,sep="")
-            d <- read.csv2(file)
+            file <- paste("data_DB/",fileDataClean,sep="")
+            d <- read.table(file,sep="\t",dec=".",stringsAsFactor=FALSE,header=TRUE)
             catlog(c("  <-- ",file,"\n"),fileLog)
             d <- select3sessions(d,fileData3sessions,fileLog,
                                  seuilAvorteDuree,seuilAvorteEvenement,seuilExclusionDelai,dateRefDefaut)
 
         } else {
             if(importationData == "3sessions") {
-                file <- paste("output/",fileData3sessions,sep="")
-                d <- read.csv2(file)
+                file <- paste("data_DB/",fileData3sessions,sep="")
+                d <- read.table(file,sep="\t",dec=".",stringsAsFactor=FALSE,header=TRUE)
                 catlog(c("  <-- ",file,"\n"),fileLog)
             } else {
                 if(importationData != "non")
@@ -115,7 +115,7 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
         if(abondanceRelative){
             catlog(c("\nABONDANCE RELATIVE\n"),fileLog)
-            speciesRelativeAbund.allV2(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+            speciesRelativeAbund.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
         }
 
         if(variationAbondance) {
@@ -126,7 +126,7 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
         if(variationAbondanceEspece) {
             catlog(c("\nVARIATION ABONDANCE PAR ESPECE\n"),fileLog)
             abundanceSpeciesYear.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
-        }
+         }
 
         if(productivite) {
             catlog(c("\nPRODUCTIVITEE\n"),fileLog)
@@ -166,7 +166,8 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
         if(onlyNew) {
             catlog(c("\nRECHERCHE STATION MISE A JOUR\n"),fileLog)
             siteN <- sationMAJ(d,fileLog)
-            site <- site[site %in% siteN]
+            if(is.null(site)) site <- siteN else site <- site[site %in% siteN]
+
         }
 
         catlog(c("\nVERIFICATION DES REPERTOIRES DE SORTIE\n"),fileLog)
@@ -176,7 +177,7 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
             for(s in site) {
                 ds <- subset(d,NEW.ID_PROG == s)
-                make_reporting(site=s,ds)
+                run.rmd(id_station = s)
 
             }
         } else { # ELSE if(pdf.local)
@@ -198,19 +199,20 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
             if(abondanceRelative){
                 catlog(c("\nABONDANCE RELATIVE\n"),fileLog)
-                speciesRelativeAbund.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+                tab_ab <- speciesRelativeAbund.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,return_table=TRUE)
             }
 
             if(variationAbondance) {
                 catlog(c("\nVARIATION ABONDANCE\n"),fileLog)
-######################
+
                 abundanceYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
-####################
+
             }
 
             if(variationAbondanceEspece) {
                 catlog(c("\nVARIATION ABONDANCE PAR ESPECE\n"),fileLog)
-                abundanceSpeciesYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+                abundanceSpeciesYear.site(d,site=site,species=vec_sp,nom_sp=sp_nom,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=sp_nom)
+                  abundanceSpeciesYear.site(d,site=site,species="PHYCOL",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
             }
 
             if(productivite) {
@@ -220,17 +222,36 @@ mainSTOCreporting <- function(file="stoc_20180616.txt",fileDataClean="data.csv",
 
             if(productiviteEspece) {
                 catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
-                productivityYearSpecies.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
+                productivityYearSpecies.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+                productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+
             }
 
 
             if(conditionCorporelle) {
                 catlog(c("\nCONDITION CORPORELLE\n"),fileLog)
+
+                bodyCondition.site(d,site=site,community_level=TRUE,species_level=FALSE,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
+
+
+ bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
+
+
                 bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
+
+bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species="SYLATR",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+
             }
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
                 returnRate.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
+site <- "205"
+                returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+
+                returnRate.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+
+
+
             }
         } # END ELSE if(pdf_.local)
 
