@@ -39,6 +39,8 @@ sig/
 *.log
 *.tex
 
+.#*
+
 my*
 
 
@@ -47,4 +49,3 @@ functions/rmd_stoc_reporting_utf8.knit.md
 functions/rmd_stoc_reporting_utf8.tex
 functions/rmd_stoc_reporting_utf8.utf8.md
 functions/rmd_stoc_reporting_utf8.log
-#todo.org#
