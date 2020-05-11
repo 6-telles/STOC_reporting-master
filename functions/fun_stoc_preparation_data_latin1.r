@@ -52,21 +52,23 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     catlog(c("\n====================================\n              IMPORTATION\n==================================== \n\nfile : ",
              file,"\n\n"),fileLog)
                                         # d: dataset
-    file <- paste("donnees/",file,sep="")
-    d <-read.delim(file, header = TRUE, sep = "\t" ,dec=decimalData, na = "",stringsAsFactors=FALSE)
-    if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = ";" ,dec=decimalData, na = "",stringsAsFactors=FALSE)
+    file <- paste("data_new/",file,sep="")
+    d <-read.delim(file, header = TRUE, sep = "\t" ,dec=decimalData, na = "",stringsAsFactors=FALSE,encoding="latin-1")
+    if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = ";" ,dec=",", na = "",stringsAsFactors=FALSE,encoding="latin-1")
 
-    if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = "," ,dec=".", na = "",stringsAsFactors=FALSE)
+    if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = "," ,dec=".", na = "",stringsAsFactors=FALSE,encoding="latin-1")
 
-    d <- d %>% mutate_if(is.character, Encoding_utf8)
+
+
+
+   # d <- d %>% mutate_if(is.character, Encoding_utf8)
+
 
     if(length(grep("..",colnames(d)[1]))>0) colnames(d)[1] <- gsub(".\\.{2}","",colnames(d)[1])
 
 
     catlog(c("    => Initial number of lines: ",nrow(d),"\n"),fileLog)
-   ##browser()
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
-                                        #browser()
 
     altitude <- read.csv("library/coordonnees_altitude_site.csv",stringsAsFactors=FALSE)
     rownames(altitude) <- altitude$NEW.ID_PROG
@@ -105,6 +107,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
                                        # dd <- d
 
     if(is.null(lastYear)) lastYear <- max(d$YEAR)
+
 
     catlog(c("\n====================================\n              RESUME DE LA TABLE IMPORTEE\n==================================== \n\nfile : ",
              file,"\n\n"),fileLog)
@@ -214,7 +217,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
          colnames(d)[(ncol(d)-length(c_manquante)+1):ncol(d)] <- c_manquante
          if("cId_Data" %in% c_manquante) d$cId_Data <- 1:nrow(d)
     }
-   #browser()
+
     d <- subset(d,select=selectedColumns)
 
 
@@ -245,6 +248,8 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     catlog(c("      -> data STOC : \n"),fileLog)
 
     ## de data non STOC
+
+
     de <- d[setdiff(1:nrow(d),union(union(grep("STOC",d$THEME),grep("STOC",d$THEME.SESSION)),grep("STOC",toupper(d$LIEUDIT)))),]
 
     if(nrow(de) > 0) {
@@ -382,7 +387,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
         write.csv2(du_idNA,"output_preparation/warning_notID_PROG.csv",
                    row.names=FALSE,quote=FALSE)
-        d.warning.idNA <- data.frame(error = "ID_PROG null",commmentError="",suppression= "ligne", subset(d,is.na(ID_PROG),select = selectedColumns))
+        d.warning.idNA <- data.frame(error = "ID_PROG null",commmentError="",suppression= "ligne", subset(d,is.na(ID_PROG) | ID_PROG =="" | ID_PROG == "NA",select = selectedColumns))
 
         lwiNA <- nrow(d.warning.idNA)
 
@@ -396,7 +401,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
 
-        d <- subset(d,!is.na(ID_PROG))
+        d <- subset(d,!is.na(ID_PROG) & ID_PROG != "NA" & ID_PROG != "")
 
         catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
     } else {
@@ -425,7 +430,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
                                      NEW.ID_PROG=rep(dProg$NEW.ID_PROG[i],dProg$nbYear[i])))
         }
     catlog(c("    -> New column: NEW.ID_PROG\n"),fileLog)
+
     d <- merge(d,t.idprog,by = c("ID_PROG","YEAR"),all.x=TRUE)
+
     d$NEW.ID_PROG <- ifelse(is.na(d$NEW.ID_PROG),as.character(d$ID_PROG),
                             as.character(d$NEW.ID_PROG))
     catlog(c(" !!! WARNING MESSAGE:",length(which(d$NEW.ID_PROG=="XX"))," line(s) deleted\n"),fileLog)
@@ -478,7 +485,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     altitude <- data.frame(altitude@data,as.data.frame(altitude@coords))
 
 
- ###  browser()
 
 
     newCol <- c("PRECISION_LOC","ALTITUDE","COMMUNES","REGION","BIOGEO")
@@ -495,7 +501,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     d <- subset(d,select=selectedColumns)
 
 ### new column HABITAT
-                                        #browser()
+
     catlog(c("\n====================================\n\n - Checking : Table 'species' complete\n------------------------------------\n"),fileLog)
 
     d <- merge(d,dsp,by="SP",all=TRUE)
@@ -911,7 +917,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 
 
-                                        # browser()
     ## tMAmean table de reference des quantiles de masse par espece et par age
     tMAmean <- aggregate(MA~SP+AGE_first,data=d,quantile,c(.01,.5,.99))
     tMAmean <- data.frame(tMAmean[,1:2],tMAmean[3][[1]][,1:3])
@@ -920,7 +925,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     tMAmean$MA_seuilmin <- floor(tMAmean$MA_01 * 0.75)
     tMAmean$MA_seuilmax <- ceiling(tMAmean$MA_99 * 1.25)
 
-     #browser()
     catlog(c("    -- add column MA_01,MA_mean, MA_99,MA_seuilmin ,MA_seuilmax,MA_borne\n"),fileLog)
     d <- merge(d,tMAmean,by=c("SP","AGE_first"))
     d$MA_borne <- ifelse(d$MA > d$MA_seuilmax | d$MA < d$MA_seuilmin ,NA,d$MA)
@@ -1029,7 +1033,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
    # write.csv2(d,"dataCeline_2017.csv",row.names=FALSE)
 
     catlog(c("\n====================================\n\n - Ajout de colonnes:\n------------------------------------\n"),fileLog)
-                                        #browser()
+
     catlog(c("    -> HABITAT (STOC-rozo, Aquatique, Terrestre)\n"),fileLog)
 
     d$HABITAT <- NA
@@ -1047,13 +1051,14 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     d$HABITAT <- ifelse(is.na(d$HABITAT),ifelse(d$Aquatique,"Aquatique","Terrestre"),d$HABITAT)
 
     catlog(c("      -> Exclusion des data 'Aquatique' avant 2000 \n"),fileLog)
-    d <- d[-which(d$HABITAT == "Aquatique" & d$YEAR < 2000),]
+    d <- d[-which(d$HABITAT == "Aquatique" & d$YEAR < 2000 | is.na(d$HABITAT)),]
     catlog(c("    => Current number of lines: ",nrow(d),"\n"),fileLog)
 
 
 ### exclusion of several mist nets
 
     catlog(c("\n - Correction: deletion of mist nets \n------------------------------------\n    informations in 'library/excluded_nets.csv' \n"),fileLog)
+
 
     # fichier exclusion de filet issu des questionnaires de Manon
     dNets <- read.csv("library/excluded_nets.csv")
@@ -1074,6 +1079,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 ### first and last year per NEW.ID_PROG
     catlog(c("\n====================================\n\n - Ajout de colonnes:\n------------------------------------\n"),fileLog)
+
+
+
     catlog(c("    -> FIRST.YEAR\n"),fileLog)
     catlog(c("    -> LAST.YEAR\n"),fileLog)
     catlog(c("    -> NB.YEAR pour le nombre d annees du programme\n"),fileLog)
@@ -1086,8 +1094,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 ### at least 2 consecutive years
     catlog(c("\n====================================\n\n - Selection des programmes de au moins 2 ans: \n------------------------------------\n"),fileLog)
-
-    ## dd <- d
 
 
     station1year <- subset(unique(subset(d,select=c(NEW.ID_PROG,FIRST.YEAR,YEAR,NB.YEARS))),NB.YEARS==1)
@@ -1112,6 +1118,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 ### curious ID number of mist nets
     catlog(c("\n====================================\n\n - Checking: ID number of mist nets \n------------------------------------\n"),fileLog)
+
     t.nets <- data.frame(error = "NF",commmentError="",suppression= "No",subset(d,NF>100,select = selectedColumns))
     ln <- nrow(t.nets)
     if(ln>0)
@@ -1137,21 +1144,25 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 ### curious ID number of mist nets
     catlog(c("\n====================================\n\n - Estimation de FS.DEDUIT \n------------------------------------\n"),fileLog)
+
+
     catlog(c(" -> Adding new columns\n"),fileLog)
     catlog(c("    --> NB.NF mist net number assessed in data\n"),fileLog)
-    du.nf <- unique(subset(d,select=c("NEW.ID_PROG","YEAR","NF")))
-    t.contingency.nf <-as.data.frame(table(du.nf$NEW.ID_PROG,du.nf$YEAR))
-    colnames(t.contingency.nf) <- c("NEW.ID_PROG","YEAR","NB.NF")
-    d <- merge(d,t.contingency.nf,by=c("NEW.ID_PROG","YEAR"))
+    du.nf <- unique(subset(d,select=c("NEW.ID_PROG","NF")))
+    t.contingency.nf <-as.data.frame(table(du.nf$NEW.ID_PROG))
+    colnames(t.contingency.nf) <- c("NEW.ID_PROG","NB.NF")
+    d <- merge(d,t.contingency.nf,by=c("NEW.ID_PROG"))
     catlog(c("    --> FS.DEDUIT mist net length assessed in data\n"),fileLog)
     d$FS.DEDUIT <- d$NB.NF * 12
     d$FS.DEDUIT <- ifelse(d$HABITAT == "STOC-rozo",120,d$FS.DEDUIT)
 
-
+    d$FS <- as.numeric(as.character(d$FS))
 
     catlog(c("\n====================================\n\n - Checking: FS \n------------------------------------\n"),fileLog)
 
+
     dnf <- subset(d,select=c("NEW.ID_PROG","YEAR","DATE","FS","FS.DEDUIT"))
+
     dnf <- na.omit(dnf)
     dnf <- unique(dnf)
     dnf$DIFF <- dnf$FS.DEDUIT - dnf$FS
@@ -1231,7 +1242,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     dnf <- na.omit(dnf)
     dnf <- unique(dnf)
     dnf$DIFF <- dnf$FS.DEDUIT - dnf$FS
-   # browser()
+
     m <- lm(FS.DEDUIT ~ FS, dnf)
     a = format(coef(m)[1], digits = 2)
     b = format(coef(m)[2], digits = 2)
@@ -1255,17 +1266,15 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     ggsave(ggfile,ggnf2)
     catlog(c("\n"),fileLog)
 
-    d$FS.OUTPUT_PREPARATION <- ifelse(d$YEAR<=2010,d$FS.DEDUIT,ifelse(is.na(d$FS),d$FS.DEDUIT,d$FS))
+    d$FS.OUTPUT <- ifelse(d$YEAR<=2010,"deduit",ifelse(is.na(d$FS),"deduit","FS"))
+    d$FS <- ifelse(d$YEAR<=2010,d$FS.DEDUIT,ifelse(is.na(d$FS),d$FS.DEDUIT,d$FS))
 
 
-
-    write.csv2(d,paste("output_preparation/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
+    write.table(d,paste("data_DB/",fileDataClean,sep=""),sep="\t",dec=".",row.names=FALSE,na="",quote=TRUE)
     catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
-
-
 }
 
 ##' Selection des 3 sessions
@@ -1318,14 +1327,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
     catlog(c("\n - Selection des donnees issue d annee avec au moins 3 sessions dans un programme: \n"),fileLog)
 
-
-
-    ## dd <- d
-
-   #
-
-
-    t.nbSessionMostFreq <-  aggregate(as.numeric(t.nbSession$NB.SESSION),
+   t.nbSessionMostFreq <-  aggregate(as.numeric(t.nbSession$NB.SESSION),
                                       list(t.nbSession$NEW.ID_PROG),
                                       get_mode)
 
@@ -1361,10 +1363,6 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     }
 
     catlog(c("\n====================================\n\n - Fiche sessions par station:\n------------------------------------\n"),fileLog)
-
-## dd <- d
-
-    #browser()
 
     agg1 <- aggregate(BAGUE~NEW.ID_PROG+YEAR + JULIANDAY,data=d,length)
     colnames(agg1)[4] <- "nb_evenement"
@@ -1420,7 +1418,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
     for(ss in stations3) {
         cat(ss,"|")
-      #  browser()
+
         session3.conserve.ss <- subset(session3.conserve,NEW.ID_PROG == ss)
         ## calcul des dates de references pour la station
         if(nrow(session3.conserve.ss) > 0) {
@@ -1434,7 +1432,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
         } else {
             ## si pas d annee a 3 session on utilise les date de references national
             tDateRef[ss,] <- dateRefDefaut
-           # browser()
+
             if(ss %in% rownames(altitude)) # decalage des date pour les station mediteraneennne et d altitude
                 if(altitude[ss,"ALTITUDE"]>=800 | altitude[ss,"BIOGEO"]=="mediterraneen"| altitude[ss,"BIOGEO"]=="alpin") tDateRef[ss,] <- tDateRef[ss,] + 15
         }
@@ -1497,7 +1495,6 @@ cat("\n")
             years <- as.numeric(as.character(unique(nbsession.ss[nbsession.ss$NB.SESSION>2,]$YEAR)))
             for(y in years) {
 #cat(y,"")
-                                        # browser()
                 tabSessionY <- aggSession[aggSession$YEAR == y & aggSession$NEW.ID_PROG == ss,]
                 julianSession <-  NA
                 for(i in 1:3)
@@ -1679,10 +1676,8 @@ cat("\n")
 
 
 
-
-
-    write.csv2(d,paste("output_preparation/",fileDataClean,sep=""),row.names=FALSE,na="",quote=FALSE)
-    catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
+   write.table(d,paste("data_DB/",fileDataClean,sep=""),sep="\t",dec=".",row.names=FALSE,na="",quote=TRUE)
+     catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
