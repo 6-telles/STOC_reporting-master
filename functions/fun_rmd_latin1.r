@@ -17,14 +17,15 @@ for(p in vecPackage) {
 
 
 
-run.rmd <- function(file.rmd="functions/rmd_stoc_reporting_utf8.rmd",rep.out="output_rapport_pdf",file.data="data_DB/data3session.csv",file.out=NULL,year = NULL, id_station = "205",format_output="pdf"){
+run.rmd <- function(file.rmd="functions/rmd_stoc_reporting_utf8.rmd",rep.out="output_rapport_pdf",file.data="data_DB/data3session.csv",file.out=NULL,year = NULL, id_station = "205",format_output="pdf",prefixe_file=""){
 
 
-file.rmd="functions/rmd_stoc_reporting_utf8.rmd";rep.out="output_rapport_pdf";file.data="data_DB/data3session.csv";file.out=NULL;year = 2018; id_station = "205";format_output="pdf"
+#file.rmd="functions/rmd_stoc_reporting_utf8.rmd";rep.out="output_rapport_pdf";file.data="data_DB/data3session.csv";file.out=NULL;year = 2018; id_station = "205";format_output="pdf"
 
 
-     if(is.null(year)) year <- as.numeric(substr(Sys.time(),1,4))
-    if(is.null(file.out)) file.out <- paste0("stoc_reporting_",id_station,"_",year,"_",format(Sys.time(),"%Y-%m-%d_%H-%M"),".",format_output)
+    if(is.null(year)) year <- as.numeric(substr(Sys.time(),1,4))
+    if(is.null(prefixe_file)) prefixe_file <- paste0(format(Sys.time(),"%Y-%m-%d_%H-%M"),"_")
+    if(is.null(file.out)) file.out <- paste0("stoc_reporting_",prefixe_file,year,"_",id_station,".",format_output)
     if(!is.null(rep.out)) file.out <- paste0(rep.out,"/",file.out)
      format <- paste0(format_output,"_document")
 
@@ -38,32 +39,29 @@ file.rmd="functions/rmd_stoc_reporting_utf8.rmd";rep.out="output_rapport_pdf";fi
          cat("\n Répertoire créer !!\n")
      }
 
-    rep <- "C:/git/STOC_reporting/"
-    file_data <- "data_DB/data3session.csv"
-    fileLog <- NULL
-    site <- "210"
-    year <- 2018
-    save.fig <- FALSE
-
-    rmarkdown::render(file.rmd,output_file=file.out,output_format = format,clean=FALSE,encoding="utf-8",params = list(set_rep = rep, set_file_data = file_data,set_fileLog = fileLog,set_site = site, set_year = year, set_save_fig = save.fig))
+      rmarkdown::render(file.rmd,output_file=file.out,output_dir=rep.out,output_format = format,clean=FALSE,encoding="utf-8",params = list(set_rep = rep, set_file_data = file_data,set_fileLog = fileLog,set_site = id_station, set_year = year, set_save_fig = save.fig))
 
      cat("DONE !!!\n")
 }
 
-
-
-
-##
-##```{r fig.ab, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:ab}Variation du nombre d'adultes capturés pour le station",site," comparé aux STOC-Capture de type ",hab_txt,",sep=""),fig.scap="Variation du nombre d'adultes"}
-##
-##speciesRelativeAbund.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE))
-##
-##```
 ##
 ##
-##```{r fig.absp, eval=TRUE,fig.align = 'center', out.width='75%',fig.cap=paste("\\label{fig:ab}Variation du nombre d'adultes capturés pour le station",site," comparé aux STOC-Capture de type ",hab_txt,",sep=""),fig.scap="Variation du nombre d'adultes par espèce"}
+##library(openxlsx)
+##filename <- "data_new/data_STOC_full_2020-01-28_avec_TQ.xlsx"
+##dn <- read.xlsx(filename, sheet = 1,colNames =TRUE,skipEmptyRows=TRUE)
+##lescol <- colnames(dn)
 ##
-##speciesRelativeAbund.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE))
+##lescol1 <-c("ACTION","CENTRE","BAGUE","DATE","HEURE","ESPECE","SEXE","AGE","PAYS","DEPT","LOCALITE","LIEUDIT","LP","MA","AD","THEME.SESSION","THEME","BAGUEUR","BG","COND.REPR","CIRC.REPR","FS","HS","DS","NF","CS","CA","PC","PI","Nom.scientifique","Nom.vernaculaire","LAT","LON","LT","ES","MU","HAB","ID_PROG","GESTION","cId_Data","cId_Session","cId_Responsable","cId_BG","cId_Localisation","cId_Bird")
 ##
-##```
+##lescol2 <-c("ACTION","CENTRE","BAGUE","DATE","HEURE","ESPECE","SEXE","AGE","PAYS","DEPT","LOCALITE","LIEUDIT","LP","MA","AD","THEME.SESSION","THEME","BAGUEUR","BG","COND.REPR","CIRC.REPR","FS","HS","DS","NF","CS","CA","PC","PI","Nom.scientifique","Nom.vernaculaire","LAT","LON","LT","ES","MU","HAB","ID_PROG","GESTION","cId_Data")
+##
+##setdiff(lescol1,lescol)
+##
+##
+##dn1 <- dn[,lescol1]
+##dn2 <- dn[,lescol2]
+##
+##
+##write.csv(dn1,"data_new/test1.r")
+##write.csv(dn2,"data_new/test2.r")
 ##
