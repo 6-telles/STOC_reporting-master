@@ -60,6 +60,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 
 
+    ## suppression des valeurs des LIEUDIT qui ont les localisation
+
+    d$LIEUDIT[grep("LAT=",d$LIEUDIT)] <- ""
 
    # d <- d %>% mutate_if(is.character, Encoding_utf8)
 
@@ -358,6 +361,9 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
     catlog(c("    --    -> Recuperation de ID_PROG dans LIEUDIT si possible\n"),fileLog)
 
+
+
+    d$ID_PROG[is.na(d$ID_PROG) | d$ID_PROG == "" | d$ID_PROG == "NA"] <- NA
     idProgLieudit <- as.numeric(str_extract(d$LIEUDIT, "[0-9]{1,}"))
     i.lieuDit.num <- which(!is.na(idProgLieudit))
     i.lieuDit.STOC <- grep("STATION STOC",toupper(d$LIEUDIT))
