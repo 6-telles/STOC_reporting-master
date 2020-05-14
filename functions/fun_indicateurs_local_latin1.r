@@ -113,7 +113,7 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fi
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
-carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,add_title=TRUE) {
+carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,add_title=TRUE) {
 
     require(rgdal)
     require(ggmap)
@@ -125,7 +125,6 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print.fig=TRUE,
         library(gridExtra)
 
     }
-       browser()
 
     france <- map_data("france")
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
@@ -162,8 +161,8 @@ carteStation <- function(site=NULL,d,add_local=TRUE,fileLog=NULL,print.fig=TRUE,
     for(ss in site)
     {
         h <- as.character(coordAll2$HABITAT[coordAll2$NEW.ID_PROG==ss])
-        fy <- max(coordAll2$FIRST.YEAR[coordAll2$NEW.ID_PROG==ss] - 3,min(d$YEAR))
-        ly <- min(coordAll2$LAST.YEAR[coordAll2$NEW.ID_PROG==ss] + 3,max(d$YEAR))
+        fy <- max(coordAll2$FIRST.YEAR[coordAll2$NEW.ID_PROG==ss] - 1,min(d$YEAR))
+        ly <- min(coordAll2$LAST.YEAR[coordAll2$NEW.ID_PROG==ss] + 1,max(d$YEAR))
 
 
         coordAllh <- subset(coordAll2,HABITAT == h & FIRST.YEAR <= ly & LAST.YEAR >= fy)
@@ -599,7 +598,8 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
     dNb <- merge(dNbJuv,dNbAd,by=c("MIGRATION","YEAR","NEW.ID_PROG","HABITAT"),all=TRUE)
     dNb$BAGUE.x[is.na(dNb$BAGUE.x)] <- 0
     dNb$BAGUE.y[is.na(dNb$BAGUE.y)] <- 0
-    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.x + dNb$BAGUE.y)
+    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.y)
+    dNb$PROD[dNb$PROD == Inf] <- NA
 
                                         #   ggTable.abund <- na.omit(ggTable.abund)
 
@@ -635,7 +635,7 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
         gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))))
         gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))),guide=FALSE)
         gg <- gg + labs(title=title_txt,
-                        x="Année",y="Productivité: Njuv/(Nad + Njuv)")
+                        x="Année",y="Productivité: Njuv/Nad")
         gg <- gg + theme(legend.position="none")
 
         if(print.fig) print(gg)
@@ -661,7 +661,6 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
 
     tabSpeQuant <- read.csv2("data_france/quantileEspece_France_.csv",stringsAsFactors=FALSE)
 
-
     dp <- unique(subset(d,AGE_first != "VOL" & MIGRATION != "",select = c("ESPECE","MIGRATION","YEAR","NEW.ID_PROG","HABITAT","BAGUE","AGE_first")))
 
     dNbAge <- aggregate(BAGUE ~ (ESPECE + MIGRATION + YEAR + NEW.ID_PROG + HABITAT + AGE_first), data=dp,length)
@@ -673,7 +672,8 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
     dNb <- merge(dNbJuv,dNbAd,by=c("ESPECE","MIGRATION","YEAR","NEW.ID_PROG","HABITAT"),all=TRUE)
     dNb$BAGUE.x[is.na(dNb$BAGUE.x)] <- 0
     dNb$BAGUE.y[is.na(dNb$BAGUE.y)] <- 0
-    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.x + dNb$BAGUE.y)
+    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.y)
+    dNb$PROD[dNb$PROD == Inf] <- NA
 
 
     aggTable <- aggregate(PROD ~ (YEAR + HABITAT+ESPECE + MIGRATION), data= dNb, quantile,c(0.025,.25,0.5,.75,0.975))
@@ -744,7 +744,7 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
                 gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(hh,paste("Station:",ss))),guide=FALSE)
                 gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
                 gg <- gg + labs(title=title_txt,
-                                x="Année",y="Productivité: Njuv/(Nad + Njuv)")
+                                x="Année",y="Productivité: Njuv/Nad")
                 gg <- gg + theme(legend.position="none")
 
                 if(print.fig) print(gg)
@@ -800,7 +800,6 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
         h <- tSite$HABITAT[1]
 
         if(community_level) {
-            ##browser()
 
             if(nrow(tSite)>10) {
 
@@ -851,6 +850,8 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
 
         if(species_level) {
 
+            if(!is.null(nom_sp)) t_nom_sp <- data.frame(species=species,nom_sp=nom_sp)
+
             if(is.null(species)) {
                 t.seuil<- aggregate(BAGUE ~ SP + YEAR, data = unique(subset(tSite,SP %in% sp,select=c("BAGUE","SP","YEAR"))), FUN = length)
                 t.seuil<- aggregate(BAGUE ~ SP , data =  t.seuil, FUN = median)
@@ -884,7 +885,6 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                 aggTable.sp_s$gr <- paste("Site ",s,",",aggTable.sp_s$AGE_first, sep="")
                 aggTable.sp_s$SITE <- s
 
-###   browser()
                 aggTable.sp <- aggTable.sp[,colnames(aggTable.sp_s)]
                 aggTableTot.sp <- rbind(subset(aggTable.sp,SP %in% list_sp & HABITAT==h),aggTable.sp_s)
 
@@ -898,7 +898,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                 for(sp in list_sp) {
 
                     if(add_title) {
-                        if(!is.null(nom_sp)) sp_fig <- nom_sp[sp == listSP.s] else sp_fig <- sp
+                        if(!is.null(nom_sp)) sp_fig <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else sp_fig <- sp
                         title_txt <- paste(sp_fig,": Station ",ss,sep="")
                     } else {
                         title_txt <- ""
@@ -907,7 +907,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                     aggTableTot.sp.sp <- subset(aggTableTot.sp,SP == sp)
                     tPoint.sp <- subset(tPoint,SP == sp)
 
-                    if(facet) if(!is.null(nom_sp)) aggTableTot.sp.sp$facet <- nom_sp[list_sp == sp] else aggTableTot.sp.sp$facet <- sp
+                    if(facet) if(!is.null(nom_sp)) aggTableTot.sp.sp$facet <-as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else aggTableTot.sp.sp$facet <- sp
 
                     gg <- ggplot(data=aggTableTot.sp.sp,aes(x=YEAR,y=med,colour=gr,fill=gr))
 
@@ -1074,7 +1074,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
 
     for(s in site) {
-                                        #    catlog(c(s,"\n"),fileLog)
+
         if(community_level) {
             d.ret.s <- subset(d.ret.tot,NEW.ID_PROG==s)
             if(length(unique(d.ret.s$YEAR))>1) {
@@ -1089,7 +1089,9 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                 if(nrow(d.ret.s)>0) {
                     if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
 
-                    gg <- ggplot(subset(aggTableAll.tot,HABITAT==h),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(AGE_first~MIGRATION,scales="free_y")
+                    aggTableAll.tot$YEAR <- aggTableAll.tot$YEAR + 1
+                    d.ret.s$YEAR <- d.ret.s$YEAR + 1
+                    gg <- ggplot(subset(aggTableAll.tot,HABITAT==h & MIGRATION !=""),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(AGE_first~MIGRATION,scales="free_y")
                     gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
                     gg <- gg + geom_line(size=1.5,alpha=.8)
                     gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
@@ -1119,6 +1121,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
         if(species_level) {
 
+            if(!is.null(nom_sp)) t_nom_sp <- data.frame(species=species,nom_sp=nom_sp)
             dsp.ret.s <- subset(dsp_ret.tot,NEW.ID_PROG==s)
             if(length(unique(dsp.ret.s$YEAR))>1) {
                 if(nrow(dsp.ret.s)>0) {
@@ -1131,14 +1134,17 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
                     compt <- aggregate(BAGUE ~ SP + YEAR, data=dsp.ret.s, sum)
                     compt <- aggregate(BAGUE ~ SP, data=compt, median)
-                    if(is.null(species))   spEligible <- compt$SP[compt$BAGUE>10] else spEligible <- species
+
+
+
+                    if(is.null(species))   spEligible <- compt$SP[compt$BAGUE>10] else spEligible <- intersect(species,unique(compt$SP))
                     if(length(spEligible)>0) {
                         dsp.ret.s <- subset(dsp.ret.s,SP %in% spEligible)
 
                         for(sp in spEligible) {
 
                             if(add_title) {
-                                if(!is.null(nom_sp)) sp_fig <- nom_sp[spEligible == sp] else sp_fig <- sp
+                                if(!is.null(nom_sp)) sp_fig <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else sp_fig <- sp
                                 title_txt <- paste(sp_fig,": Station ",ss,sep="")
                             } else {
                                 title_txt <- ""
@@ -1146,18 +1152,18 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
                             aggTableTot.sp.sp <- subset(aggTableSP.tot,HABITAT==h & SP == sp)
                             dsp.ret.sp <- subset(dsp.ret.s,SP == sp)
- # browser()
 
                             if(facet){
                                 if(nrow(aggTableTot.sp.sp)>0) {
-                                    if(!is.null(nom_sp)) aggTableTot.sp.sp$facet <- nom_sp[spEligible == sp] else aggTableTot.sp.sp$facet <- sp
+                                    aggTableTot.sp.sp$YEAR <- aggTableTot.sp.sp$YEAR + 1
+                                    if(!is.null(nom_sp)) aggTableTot.sp.sp$facet <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else aggTableTot.sp.sp$facet <- sp
                                 } else {
-                                    if(!is.null(nom_sp)) dsp.ret.sp$facet <- nom_sp[spEligible == sp] else dsp.ret.sp$facet <- sp
+                                    if(!is.null(nom_sp)) dsp.ret.sp$facet <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else dsp.ret.sp$facet <- sp
                                 }
 
                             } #END if(facet)
 
-
+                            dsp.ret.sp$YEAR <-  dsp.ret.sp$YEAR + 1
                             if(nrow(aggTableTot.sp.sp)>0) {
                                 gg <- ggplot( aggTableTot.sp.sp ,aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))
                                 gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
@@ -1177,7 +1183,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                             gg <- gg + theme(legend.position="none")
 
                             gg <- gg + labs(title=title_txt,
-                                            x="Année",y="Taux de retour à t+1")
+                                            x="Année",y="Taux de retour de t-1 à t")
 
                             if(print.fig) print(gg)
 
