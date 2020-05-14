@@ -38,6 +38,10 @@ sig/
 *.zip
 *.log
 *.tex
+*.toc
+*.lof
+*.aux
+
 
 .#*
 #*#
