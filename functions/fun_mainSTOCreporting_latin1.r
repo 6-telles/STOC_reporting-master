@@ -36,7 +36,7 @@
 ##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles donnnees
 ##' @return NULL
 ##' @author Romain Lorrilliere
-mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
+mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
                               lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site=NULL,
                               seuilAbondanceAnneeAll=30,seuilAbondanceAnneeSite=10,
                               seuilAvorteDuree= 4,seuilAvorteEvenement=5,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188),
@@ -136,6 +136,8 @@ mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData
         if(productiviteEspece) {
             catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
             productivityYearSpecies.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+
+
         }
 
 
@@ -174,8 +176,11 @@ mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData
         repertoireSite(d,site)
 
         if(pdf_local){
+    catlog(c("\nCREATION DES RAPPORTS\n"),fileLog)
 
-            for(s in site) {
+    for(s in site) {
+          catlog(c("\nsite:",s,"\n"),fileLog)
+
                 ds <- subset(d,NEW.ID_PROG == s)
                 run.rmd(id_station = s)
 
@@ -212,7 +217,7 @@ mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData
             if(variationAbondanceEspece) {
                 catlog(c("\nVARIATION ABONDANCE PAR ESPECE\n"),fileLog)
                 abundanceSpeciesYear.site(d,site=site,species=vec_sp,nom_sp=sp_nom,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=sp_nom)
-                  abundanceSpeciesYear.site(d,site=site,species="PHYCOL",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+                 ## abundanceSpeciesYear.site(d,site=site,species="PHYCOL",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
             }
 
             if(productivite) {
@@ -223,7 +228,9 @@ mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData
             if(productiviteEspece) {
                 catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
                 productivityYearSpecies.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
-                productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+              ##  productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+
+## productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = "Pouillot véloce",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
             }
 
@@ -236,19 +243,19 @@ mainSTOCreporting <- function(file="test2.csv",fileDataClean="data.csv",fileData
 
  bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 
-
+##
                 bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
 
-bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species="SYLATR",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+                bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species="SYLATR",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
             }
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
                 returnRate.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
-site <- "205"
-                returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+##site <- "205"
+       ###         returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
-                returnRate.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+        #     returnRate.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
 
 
