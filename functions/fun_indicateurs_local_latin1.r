@@ -659,6 +659,8 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
     require(ggplot2)
 ### d <- read.csv2("output/data.csv",stringsAsFactors=FALSE)
 
+    if(!is.null(nom_sp)) t_nom_sp <- data.frame(species=species,nom_sp=nom_sp)
+
     tabSpeQuant <- read.csv2("data_france/quantileEspece_France_.csv",stringsAsFactors=FALSE)
 
     dp <- unique(subset(d,AGE_first != "VOL" & MIGRATION != "",select = c("ESPECE","MIGRATION","YEAR","NEW.ID_PROG","HABITAT","BAGUE","AGE_first")))
@@ -722,8 +724,9 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
 
             for(sp in listSP.s) {
 
+
                 if(add_title) {
-                    if(!is.null(nom_sp)) sp_fig <- nom_sp[sp == listSP.s] else sp_fig <- sp
+                    if(!is.null(nom_sp)) sp_fig <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else sp_fig <- sp
                     title_txt <- paste(sp_fig,": Station ",ss,sep="")
                 } else {
                     title_txt <- ""
@@ -731,18 +734,23 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
 
                 aggTable.ss <- subset(aggTable.s,ESPECE == sp)
 
-                if(facet) if(!is.null(nom_sp)) aggTable.ss$facet <- nom_sp[listSP.s == sp] else aggTable.ss$facet <- sp
+                if(nrow(aggTable.ss)>0) {
+                      } #END if(nrow(aggTable.ss)>0)
+
+                if(facet) if(!is.null(nom_sp)) aggTable.ss$facet <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else aggTable.ss$facet <- sp
 
                 gg <- ggplot(aggTable.ss,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
-                if(!is.null(facet)) gg <- gg + facet_wrap(.~facet,scales="free_y")
 
                 gg <- gg + geom_ribbon(aes(x=YEAR,ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA )
                 gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
                 gg <- gg + geom_line(alpha=.8,size=1.5)
+
                 gg <- gg + geom_point(data=subset(aggTable.ss,HABITAT==paste("Station:",ss)),size=2)
                 gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(hh,paste("Station:",ss))))
                 gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(hh,paste("Station:",ss))),guide=FALSE)
-                gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
+ if(!is.null(facet)) gg <- gg + facet_wrap(.~facet,scales="free_y")
+
+                  gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
                 gg <- gg + labs(title=title_txt,
                                 x="Année",y="Productivité: Njuv/Nad")
                 gg <- gg + theme(legend.position="none")
@@ -756,6 +764,7 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
                     ggsave(ggfile,gg)
                     catlog(c("\n"),fileLog)
                 }
+
             }# END for(sp in listSP.s)
         }# END   if(nrow(dNbsite) > 0)
     }# END for(ss in site) {
@@ -916,9 +925,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
 
                     gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
                     gg <- gg + geom_line(size=1.5,alpha=.8)
-                                        # gg <- gg + geom_point(size=1)
                     gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
-                                        #      gg <- gg + geom_point(aes(y=CIquart_inf),alpha=.5,size=.5)+geom_point(aes(y=CIquart_sup),alpha=.5,size=.5)
                     gg <- gg + geom_point(data=tPoint.sp,size=.5,alpha=.5)
                     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),name="")
                     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),guide=FALSE)
@@ -1005,13 +1012,6 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                            d.ret.j)
 
 
-                                        #        aggTable <- aggregate(RETURN ~ (YEAR + AGE_first + MIGRATION), data= subset(d.ret,BAGUE>10), quantile,c(0.025,0.25,0.5,0.75,0.975))
-                                        #       aggTable <- data.frame(aggTable[,1:3],aggTable[4][[1]][,1:5])
-                                        #      colnames(aggTable)[4:8] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
-
-
-            ##        aggTable <- subset(aggTable,YEAR<max(aggTable$YEAR))
-            ##        aggTable$HABITAT <- h
 
             if (h == vecHab[1]) aggTableAll.tot <- aggTable else aggTableAll.tot <- rbind(aggTableAll.tot,aggTable)
             if (h == vecHab[1]) d.ret.tot <- d.ret else d.ret.tot <- rbind(d.ret.tot,d.ret)
@@ -1041,29 +1041,13 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
             dsp.ret <- rbind(dsp.ret.a,
                              dsp.ret.j)
 
-            ## dsp.ret <- subset(dsp.ret,BAGUE>5)
-            ## u.dsp.ret <- subset(dsp.ret,select=c("NEW.ID_PROG","SP","AGE",)))
-            ##  dsp.medcompt <- aggregate(BAGUE ~ NEW.ID_PROG + SP + AGE_first, data = dsp.ret, FUN = median)
-
             dsp.medcompt <- aggregate(BAGUE ~ NEW.ID_PROG + SP + YEAR , data = dsp.ret, FUN = sum)
             dsp.medcompt <- aggregate(BAGUE ~ NEW.ID_PROG + SP , data = dsp.medcompt, FUN = median)
 
             dsp.medSeuil <- subset(dsp.medcompt,BAGUE>10)
 
-            ##   dsp.ret <- dsp.ret[paste(dsp.ret$NEW.ID_PROG,dsp.ret$SP,dsp.ret$AGE_first) %in% paste(dsp.medSeuil$NEW.ID_PROG,dsp.medSeuil$SP,dsp.medSeuil$AGE_first), ]
             dsp.ret <- dsp.ret[paste(dsp.ret$NEW.ID_PROG,dsp.ret$SP) %in% paste(dsp.medSeuil$NEW.ID_PROG,dsp.medSeuil$SP), ]
 
-            ##  dsp.medSeuil.compt <- aggregate(NEW.ID_PROG ~ SP, data = dsp.medSeuil, FUN = length)
-            ##    dsp.medSeuil.compt <- subset( dsp.medSeuil.compt,NEW.ID_PROG > 30)
-            ##   dsp.ret <- dsp.ret[which(paste(dsp.ret$SP) %in% paste( dsp.medSeuil.compt$SP)),]
-
-            ##
-            ##        aggTableSP <- aggregate(RETURN ~ (YEAR + AGE_first + SP + MIGRATION), data= dsp.ret, quantile,c(0.025,0.25,0.5,0.75,0.975))
-            ##        aggTableSP <- data.frame(aggTableSP[,1:4],aggTableSP[5][[1]][,1:5])
-            ##        colnames(aggTableSP)[5:9] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
-            ##        aggTableSP <- subset(aggTableSP,YEAR<max(aggTableSP$YEAR))
-            ##        aggTableSP$HABITAT <- h
-            ##
             if(h == vecHab[1]) aggTableSP.tot <- aggTable.sp else aggTableSP.tot <- rbind(aggTableSP.tot,aggTable.sp)
 
             if(h == vecHab[1]) dsp_ret.tot <- dsp.ret else   dsp_ret.tot <- rbind(dsp_ret.tot,dsp.ret)
@@ -1089,6 +1073,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                 if(nrow(d.ret.s)>0) {
                     if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
 
+
                     aggTableAll.tot$YEAR <- aggTableAll.tot$YEAR + 1
                     d.ret.s$YEAR <- d.ret.s$YEAR + 1
                     gg <- ggplot(subset(aggTableAll.tot,HABITAT==h & MIGRATION !=""),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(AGE_first~MIGRATION,scales="free_y")
@@ -1098,8 +1083,8 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
                     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
                     gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
-                    gg <- gg + geom_line(data=d.ret.s, aes(y=RETURN),colour="#d71818",size=1.8,alpha=.5)
-                    gg <- gg + geom_point(data=d.ret.s, aes(y=RETURN),colour="#d71818",size=2)
+                    gg <- gg + geom_line(data=subset(d.ret.s, MIGRATION !=""), aes(y=RETURN),colour="#d71818",size=1.8,alpha=.5)
+                    gg <- gg + geom_point(data=subset(d.ret.s, MIGRATION !=""), aes(y=RETURN),colour="#d71818",size=2)
                     gg <- gg + labs(title=title_txt,
                                     x="Année",y="Taux de retour")
                     gg <- gg + theme(legend.position="none")
