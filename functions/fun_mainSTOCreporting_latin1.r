@@ -37,7 +37,7 @@
 ##' @return NULL
 ##' @author Romain Lorrilliere
 mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
-                              lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site=NULL,
+                              lastYear=NULL,importationData="brut",all=TRUE,local=TRUE,site=NULL,site_start_from=NULL,
                               seuilAbondanceAnneeAll=30,seuilAbondanceAnneeSite=10,
                               seuilAvorteDuree= 4,seuilAvorteEvenement=5,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188),
                               selectedSessionPlot=TRUE,carte = TRUE,abondanceRelative=TRUE ,variationAbondance=TRUE,variationAbondanceEspece=TRUE,
@@ -57,7 +57,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
     ## ##############################
     ## DEBUG declaration parametres
-## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
+ ## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
 ##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
 ##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
 ##    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
@@ -169,6 +169,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
             catlog(c("\nRECHERCHE STATION MISE A JOUR\n"),fileLog)
             siteN <- sationMAJ(d,fileLog)
             if(is.null(site)) site <- siteN else site <- site[site %in% siteN]
+            if(!is.null(site_start_from)) site <- site[which(site == site_start_from):length(site)]
 
         }
 
@@ -255,7 +256,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 ##site <- "205"
        ###         returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
-        #     returnRate.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+            returnRate.site(d,site="202",community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
 
 
