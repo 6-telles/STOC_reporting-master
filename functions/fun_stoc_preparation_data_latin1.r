@@ -29,7 +29,7 @@
 ##' @param dateRefDefaut
 ##' @return
 ##' @author Romain Lorrilliere
-import <- function(file="stoc_20161011.txt",lastYear=NULL,
+import <- function(file="extrait.txt",lastYear=NULL,
                    decimalData=".",fileDataClean="data.csv",fileLog="log.txt",
                    seuilAvorteDuree= 3, seuilAvorteEvenement=4,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188)) {
 
@@ -82,7 +82,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 
 
-
 ### new column SP for SP code without ssp information
     catlog(c("\n====================================\n\n - Ajout de colonnes:\n------------------------------------\n"),fileLog)
     catlog(c("    -> SP avec les 6 premiers caractere de ESPECE\n"),fileLog)
@@ -111,7 +110,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
     if(is.null(lastYear)) lastYear <- max(d$YEAR)
 
-
     catlog(c("\n====================================\n              RESUME DE LA TABLE IMPORTEE\n==================================== \n\nfile : ",
              file,"\n\n"),fileLog)
     tCont.bague <- aggregate(BAGUE~ID_PROG + YEAR,d,length)
@@ -134,7 +132,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     d$COMMUNES <- NA
     d$REGION <- NA
     d$BIOGEO <- NA
-
 
   ### fixing strange error in ACTION field (due to encoding)
     catlog(c("\n====================================\n\n - Checking et correction: ACTION field character encoding\n------------------------------------\n"),fileLog)
@@ -202,7 +199,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     }
 
 
-
     catlog(c("\n====================================\n\n - Selection :\n------------------------------------\n"),fileLog)
     catlog(c("      -> colonne : [",paste(selectedColumns,collapse=","),"]\n"),fileLog)
 
@@ -251,7 +247,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     catlog(c("      -> data STOC : \n"),fileLog)
 
     ## de data non STOC
-
 
     de <- d[setdiff(1:nrow(d),union(union(grep("STOC",d$THEME),grep("STOC",d$THEME.SESSION)),grep("STOC",toupper(d$LIEUDIT)))),]
 
@@ -355,7 +350,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     tCont <- merge(tCont,tCont2,by=c("ID_PROG","YEAR"),all=TRUE)
     tCont <- tCont[order(tCont$ID_PROG,tCont$YEAR),]
 
-
 ### check ID_PROG empty
     catlog(c("\n====================================\n\n - Checking: ID_PROG should not empty \n------------------------------------\n"),fileLog)
 
@@ -413,7 +407,6 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     } else {
         catlog(c(" --> OK\n"),fileLog)
     }
-
 
 ### Correction of programe
     catlog(c("\n====================================\n\n - Correction: split and deletion of programme \n------------------------------------\n    informations in 'library/newID_PROG.csv' \n"),fileLog)
@@ -477,7 +470,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
     write.csv(tCont,"output_preparation/tableContingenceStation.csv",row.names=FALSE)
 
-       catlog(c("\n====================================\n\n - Add : Altitude and LON LAT\n------------------------------------\n"),fileLog)
+    catlog(c("\n====================================\n\n - Add : Altitude and LON LAT\n------------------------------------\n"),fileLog)
 
 
 
@@ -1045,6 +1038,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
     d$HABITAT <- NA
 
     d$HABITAT[grep("ROZO",paste(d$THEME,d$THEME.SESSION))] <- "STOC-rozo"
+    d$HABITAT[d$NEW.ID_PROG %in% unique(d$NEW.ID_PROG[d$HABITAT == "STOC-rozo"])] <- "STOC-rozo"
 
     du <- unique(subset(d,select=c(NEW.ID_PROG,BAGUE,HABITAT_SP)))
 
@@ -1277,7 +1271,7 @@ import <- function(file="stoc_20161011.txt",lastYear=NULL,
 
 
     write.table(d,paste("data_DB/",fileDataClean,sep=""),sep="\t",dec=".",row.names=FALSE,na="",quote=TRUE)
-    catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
+    catlog(paste("\n====================================\n\nDATA exported :data_DB/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
@@ -1683,7 +1677,7 @@ cat("\n")
 
 
    write.table(d,paste("data_DB/",fileDataClean,sep=""),sep="\t",dec=".",row.names=FALSE,na="",quote=TRUE)
-     catlog(paste("\n====================================\n\nDATA exported :output_preparation/",fileDataClean,"\n",sep=""),fileLog)
+     catlog(paste("\n====================================\n\nDATA exported :data_DB/",fileDataClean,"\n",sep=""),fileLog)
     catlog(c("\n\n    => Final number of lines: ",nrow(d),"\n"),fileLog)
 
     return(d)
