@@ -141,21 +141,31 @@ abundanceYear.all <- function(d,habitat=NULL,fileLog="log.txt",print.fig=FALSE,s
     t.nbnf.session <- unique(subset(dhAd,select=c("NEW.ID_PROG","YEAR","SESSION","FS")))
     t.nbnf <- aggregate(FS~NEW.ID_PROG+YEAR, data=t.nbnf.session, sum, na.rm=FALSE)
 
-    t.fs.output <- tapply(t.nbnf.session$FS,list(t.nbnf.session$NEW.ID_PROG,t.nbnf.session$YEAR), sum)
-                                        #t.fs.saisi <- tapply(t.nbnf.session$FS,list(t.nbnf.session$NEW.ID_PROG,t.nbnf.session$YEAR), sum)
-
-    t.fs <- data.frame(NEW.ID_PROG = rep(rownames(t.fs.output),ncol(t.fs.output)),
-                       YEAR = rep(colnames(t.fs.output),each=nrow(t.fs.output)),
-                       FS.OUPUT = as.vector(as.matrix(t.fs.output)))
-    t.fs <- subset(t.fs,!is.na(FS.OUPUT))
 
 
+##    t.fs.output <- tapply(t.nbnf.session$FS,list(t.nbnf.session$NEW.ID_PROG,t.nbnf.session$YEAR), sum)
+##                                        #t.fs.saisi <- tapply(t.nbnf.session$FS,list(t.nbnf.session$NEW.ID_PROG,t.nbnf.session$YEAR), sum)
+##
+##    t.fs <- data.frame(NEW.ID_PROG = rep(rownames(t.fs.output),ncol(t.fs.output)),
+##                       YEAR = rep(colnames(t.fs.output),each=nrow(t.fs.output)),
+##                       FS.OUPUT = as.vector(as.matrix(t.fs.output)))
+##    t.fs <- subset(t.fs,!is.na(FS.OUPUT))
+    ##
+
+
+
+    t.fs <- aggregate(FS~NEW.ID_PROG + YEAR + HABITAT,data= unique(subset(d,select=c("NEW.ID_PROG","HABITAT","YEAR","SESSION","FS","FS.OUTPUT"))),sum)
+
+    if(!is.null(habitat))  t.fs  <- subset( t.fs ,HABITAT == habitat)
+
+
+    t.fs <- t.fs[,c("NEW.ID_PROG","YEAR","FS")]
     t.abund <- merge(t.abund,t.fs,by=c("NEW.ID_PROG","YEAR"))
     t.abund.all <- data.frame(t.abund,HABITAT = "tout")
     t.abund <- merge(t.abund,du.hab,by="NEW.ID_PROG")
     if(is.null(habitat))      t.abund <- rbind(t.abund,t.abund.all)
 
-    t.abund$ABUND.ADJUST <- t.abund$ABUND / t.abund$FS.OUPUT*(120*3)
+    t.abund$ABUND.ADJUST <- t.abund$ABUND / t.abund$FS*(120*3)
     ggTable.abund <- rbind(t.abund)
 
                                         #   ggTable.abund <- na.omit(ggTable.abund)
@@ -346,10 +356,11 @@ productivityYear.all <- function(d,habitat=NULL,fileLog="log.txt",print.fig=FALS
     dNb <- merge(dNbJuv,dNbAd,by=c("MIGRATION","YEAR","NEW.ID_PROG","HABITAT"),all=TRUE)
     dNb$BAGUE.x[is.na(dNb$BAGUE.x)] <- 0
     dNb$BAGUE.y[is.na(dNb$BAGUE.y)] <- 0
-    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.x + dNb$BAGUE.y)
+    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.y)
+    dNb$PROD[dNb$PROD == Inf] <- NA
 
 
-    aggTable <- aggregate(PROD ~ (YEAR + HABITAT+MIGRATION), data= dNb, quantile,c(0.025,.25,0.5,.75,0.975))
+    aggTable <- aggregate(PROD ~ (YEAR + HABITAT+MIGRATION), data= subset(dNb,!is.na(PROD)), quantile,c(0.025,.25,0.5,.75,0.975))
     aggTable <- data.frame(aggTable[,1:3],aggTable[4][[1]][,1:5])
     colnames(aggTable)[4:8] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
 
@@ -414,10 +425,12 @@ productivityYearSpecies.all <- function(d,habitat=NULL,fileLog="log.txt",print.f
     dNb <- merge(dNbJuv,dNbAd,by=c("ESPECE","MIGRATION","YEAR","NEW.ID_PROG","HABITAT"),all=TRUE)
     dNb$BAGUE.x[is.na(dNb$BAGUE.x)] <- 0
     dNb$BAGUE.y[is.na(dNb$BAGUE.y)] <- 0
-    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.x + dNb$BAGUE.y)
+
+    dNb$PROD <- dNb$BAGUE.x / (dNb$BAGUE.y)
+    dNb$PROD[dNb$PROD == Inf] <- NA
 
 
-    aggTable <- aggregate(PROD ~ (YEAR + HABITAT+ESPECE + MIGRATION), data= dNb, quantile,c(0.025,.25,0.5,.75,0.975))
+    aggTable <- aggregate(PROD ~ (YEAR + HABITAT+ESPECE + MIGRATION), data= subset(dNb,!is.na(PROD)), quantile,c(0.025,.25,0.5,.75,0.975))
     aggTable <- data.frame(aggTable[,1:4],aggTable[5][[1]][,1:5])
     colnames(aggTable)[5:9] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
 
@@ -519,6 +532,7 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
             dh <- subset(d,HABITAT==h & AGE_first != "VOL")
             dh.seuil<- aggregate(BAGUE ~ SP + YEAR, data = unique(subset(dh,select=c("BAGUE","SP","YEAR"))), FUN = length)
             dh.seuil<- aggregate(BAGUE ~ SP , data = dh.seuil, FUN = median)
+
             dh.seuil <- subset( dh.seuil,BAGUE > 50)#length(unique(d.a$NEW.ID_PROG))*.25)
 
             dh <- subset(dh,SP %in% dh.seuil$SP)
@@ -560,9 +574,11 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
         } # END for(h in vecHab)
 
         if(save.data_france){
-            file <- paste0("data_France/bodyCondition_sp_.csv")
+
+            file <- paste0("data_France/bodyCondition_France_sp_.csv")
             catlog(c("  -> ",file,"\n"),fileLog)
             write.csv2(aggTable_all,file,row.names=FALSE)
+
         }
     } # END   if(do.sp)
 
@@ -678,7 +694,8 @@ returnRate.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceA
     for(h in vecHab) {
 
         if(do.all) {
-            gg <- ggplot(subset(aggTableAll.tot,HABITAT==h),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(MIGRATION~AGE_first)
+
+            gg <- ggplot(subset(aggTableAll.tot,HABITAT==h & MIGRATION != ""),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(AGE_first~MIGRATION,scale="free_y")
             gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
             gg <- gg + geom_line(size=1.5,alpha=.8)
             gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
