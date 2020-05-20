@@ -544,12 +544,13 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
 
         if(add_title) title_txt <- paste("Captures toutes espèces\npour la station ",ss,sep="") else title_txt <- ""
 
+     #   browser()
         gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
         gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour = NA)
         gg <- gg + geom_line(aes(y=CIquart_inf),size=0.6,alpha=.6)+ geom_line(aes(y=CIquart_sup,color=HABITAT),size=0.6,alpha=.6)
         gg <- gg + geom_line(size=1.5,alpha=1)
         gg <- gg + geom_point(data=ggSite,size=3)
-                                        #   gg <- gg + geom_line(data = ggSite,mapping = aes(x=YEAR,y=med,colour=HABITAT),size=1.8,alpha=.8)
+
         gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))))
         gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))),guide=FALSE)
 
@@ -775,7 +776,7 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
 
 
 
-bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,species=NULL,nom_sp=NULL,limitTime=TRUE,seuilAbondanceAnnee=30,seuilAbondanceAnneeSite=10,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE,facet=TRUE)
+bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,species=NULL,nom_sp=NULL,limitTime=TRUE,seuilAbondanceAnnee=30,seuilAbondanceAnneeSite=10,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE,facet=TRUE,return.table=FALSE)
 {
 
 
@@ -789,29 +790,22 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
         aggTable <-  read.csv2("data_France/bodyCondition_France.csv")
         aggTable$gr <- paste("FRANCE,",aggTable$AGE_first)
         aggTable$SITE <- "FRANCE"
-
-
     }
 
     if(species_level) {
-
         aggTable.sp <- read.csv2("data_France/bodyCondition_France_sp_.csv")
         aggTable.sp$gr <- paste("FRANCE,",aggTable.sp$AGE_first)
         aggTable.sp$SITE <- "FRANCE"
-
-
     }
 
 
     for(s in site) {
-
         tSite <- subset(d,AGE_first!="VOL" & NEW.ID_PROG==s & (!(is.na(MA_borne))) & (!(is.na(LP_indice_borne))))
         h <- tSite$HABITAT[1]
 
         if(community_level) {
 
             if(nrow(tSite)>10) {
-
 
                 aggTable_s <- aggregate(MA_indice_borne ~ AGE_first + YEAR + HABITAT,tSite,quantile, c(0.025,0.25,0.5,0.75,0.975))
                 if(nrow(aggTable_s)==1) {
@@ -826,33 +820,33 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                 aggTable_s$gr <- paste("Site ",s,",",aggTable_s$AGE_first, sep="")
                 aggTable_s$SITE <- s
                 aggTableTot <- rbind(subset(aggTable,HABITAT==h),aggTable_s)
+                if(print.fig |save.fig) {
+
+                    minYear <- max(min(aggTable_s$YEAR)-1,min(aggTable$YEAR))
+                    maxYear <- min(max(aggTable_s$YEAR)+1,max(aggTable$YEAR))
 
 
-                minYear <- max(min(aggTable_s$YEAR)-1,min(aggTable$YEAR))
-                maxYear <- min(max(aggTable_s$YEAR)+1,max(aggTable$YEAR))
+                    if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
 
+                    gg <- ggplot(data=aggTableTot,aes(x=YEAR,y=med,colour=gr,fill=gr)) + facet_grid(AGE_first~.,scales="free_y")
+                    gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
+                    gg <- gg + geom_point(size=2,alpha=.8) + geom_line(size=1.5,alpha=.8)
+                    gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
+                    gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),name="")
+                    gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),guide=FALSE)
+                    gg <- gg + labs(title=title_txt,x="Année",y="Condition corporelle: (MA-MA_mean_sp)/MA_mean_sp")
+                    gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
+                    gg <- gg + theme(legend.position="none")
 
-                if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
+                    if(print.fig) print(gg)
 
-                gg <- ggplot(data=aggTableTot,aes(x=YEAR,y=med,colour=gr,fill=gr)) + facet_grid(AGE_first~.,scales="free_y")
-                gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
-                gg <- gg + geom_point(size=2,alpha=.8) + geom_line(size=1.5,alpha=.8)
-                gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
-                gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),name="")
-                gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),guide=FALSE)
-                gg <- gg + labs(title=title_txt,x="Année",y="Condition corporelle: (MA-MA_mean_sp)/MA_mean_sp")
-                gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
-                gg <- gg + theme(legend.position="none")
-
-                if(print.fig) print(gg)
-
-                if(save.fig) {
-                    ggfile <- paste("output/",s,"/bodyCondition_site",s,".png",sep="")
-                    catlog(c("Check",ggfile,":"),fileLog)
-                    ggsave(ggfile,gg)
-                    catlog(c("\n"),fileLog)
-                }
-
+                    if(save.fig) {
+                        ggfile <- paste("output/",s,"/bodyCondition_site",s,".png",sep="")
+                        catlog(c("Check",ggfile,":"),fileLog)
+                        ggsave(ggfile,gg)
+                        catlog(c("\n"),fileLog)
+                    }
+                } # END if(print.fig |save.fig)
             } # END  if(nrow(tSite)>10)
 
         } # END if(community_level) {
@@ -862,7 +856,8 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
             if(!is.null(nom_sp)) t_nom_sp <- data.frame(species=species,nom_sp=nom_sp)
 
             if(is.null(species)) {
-                t.seuil<- aggregate(BAGUE ~ SP + YEAR, data = unique(subset(tSite,SP %in% sp,select=c("BAGUE","SP","YEAR"))), FUN = length)
+
+                t.seuil<- aggregate(BAGUE ~ SP + YEAR, data = unique(subset(tSite,select=c("BAGUE","SP","YEAR"))), FUN = length)
                 t.seuil<- aggregate(BAGUE ~ SP , data =  t.seuil, FUN = median)
                 t.seuil <- subset( t.seuil,BAGUE > 10)#length(unique(d.a$NEW.ID_PROG))*.25)
 
@@ -873,8 +868,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                 list_sp <- species
 
                 tS.seuil <- subset(tSite, SP %in% list_sp)
-            }
-
+            } # END ELSE if(is.null(species))
 
             if(nrow(tS.seuil)>0) {
 
@@ -897,56 +891,23 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                 aggTable.sp <- aggTable.sp[,colnames(aggTable.sp_s)]
                 aggTableTot.sp <- rbind(subset(aggTable.sp,SP %in% list_sp & HABITAT==h),aggTable.sp_s)
 
-                minYear <- max(min(aggTable.sp_s$YEAR)-1,min(aggTable.sp$YEAR))
-                maxYear <- min(max(aggTable.sp_s$YEAR)+1,max(aggTable.sp$YEAR))
+              if(print.fig |save.fig) {
 
+                    plot_local_sp(aggTableTot.sp,species,nom_sp,print.fig,save.fig,add_title,facet,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear =min(aggTable.sp_s$YEAR)-1,maxYear = max(aggTable.sp_s$YEAR))
 
-                tPoint <- data.frame(SP = tS.seuil$SP,YEAR=tS.seuil$YEAR,HABITAT=tS.seuil$HABITAT,
-                                     med= tS.seuil$MA_LP,gr= paste("Site ",s,",",tS.seuil$AGE_first, sep=""),
-                                     AGE_first=tS.seuil$AGE_first)
-                for(sp in list_sp) {
+                } # END if(print.fig |save.fig)
+        } else {  # END if(nrow(tS.seuil)>0)
+            aggTableTot.sp <- tS.seuil
+        }# END ELSE if(nrow(tS.seuil)>0)
+    } # END  if(species_level)
+} # END for(s in site)
+if(return.table) {
+    l.ret <- list()
 
-                    if(add_title) {
-                        if(!is.null(nom_sp)) sp_fig <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else sp_fig <- sp
-                        title_txt <- paste(sp_fig,": Station ",ss,sep="")
-                    } else {
-                        title_txt <- ""
-                    }
+    if(community_level) l.ret[["community"]] <- aggTableTot
+    if(species_level) l.ret[["species"]] <- aggTableTot.sp
+}
 
-                    aggTableTot.sp.sp <- subset(aggTableTot.sp,SP == sp)
-                    tPoint.sp <- subset(tPoint,SP == sp)
-
-                    if(facet) if(!is.null(nom_sp)) aggTableTot.sp.sp$facet <-as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp]) else aggTableTot.sp.sp$facet <- sp
-
-                    gg <- ggplot(data=aggTableTot.sp.sp,aes(x=YEAR,y=med,colour=gr,fill=gr))
-
-                    if(facet) gg <- gg + facet_grid(AGE_first~facet,scales="free_y") else gg <- gg + facet_grid(AGE_first~.,scales="free_y")
-
-
-                    gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
-                    gg <- gg + geom_line(size=1.5,alpha=.8)
-                    gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
-                    gg <- gg + geom_point(data=tPoint.sp,size=.5,alpha=.5)
-                    gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),name="")
-                    gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),guide=FALSE)
-                    gg <- gg + labs(title=title_txt,y="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x="Année")
-                    gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
-                    gg <- gg + theme(legend.position="none")
-
-                    if(print.fig) print(gg)
-
-
-                    if(save.fig) {
-                        ggfile <- paste("output/",s,"/bodyCondition_sp_site",s,".png",sep="")
-                        catlog(c("Check",ggfile,":"),fileLog)
-                        ggsave(ggfile,gg)
-                        catlog(c("\n"),fileLog)
-                    }
-                }# END  for(sp in list_sp) {
-
-            } # END if(nrow(tS.seuil)>0)
-        } # END  if(species_level)
-    } # END for(s in site)
 }### END bodyCondition.site
 
 
@@ -995,21 +956,33 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
 
 
-            d.ret.a <- aggregate(RETURN ~ NEW.ID_PROG + YEAR + MIGRATION, data = d.a, FUN = returnRateAssessment)
-            d.compt.a <- aggregate(BAGUE ~ NEW.ID_PROG + YEAR + MIGRATION , data = d.a, FUN = length)
-            d.ret.a <- merge(d.ret.a,d.compt.a,by=c("NEW.ID_PROG","YEAR","MIGRATION"))
+            d.ret <- NULL
 
+
+            if(nrow(d.a)>0) {
+                d.ret.a <- aggregate(RETURN ~ NEW.ID_PROG + YEAR + MIGRATION, data = d.a, FUN = returnRateAssessment)
+                d.compt.a <- aggregate(BAGUE ~ NEW.ID_PROG + YEAR + MIGRATION , data = d.a, FUN = length)
+                d.ret.a <- merge(d.ret.a,d.compt.a,by=c("NEW.ID_PROG","YEAR","MIGRATION"))
+                d.ret.a$AGE_first <- "AD"
+
+                d.ret <- rbind(d.ret,
+                           d.ret.a)
+
+           }
+
+            if(nrow(d.j)>0) {
             d.ret.j <- aggregate(RETURN ~ NEW.ID_PROG + YEAR + MIGRATION , data = d.j, FUN = returnRateAssessment)
             d.compt.j <- aggregate(BAGUE ~ NEW.ID_PROG + YEAR + MIGRATION, data = d.j, FUN = length)
             d.ret.j <- merge(d.ret.j,d.compt.j,by=c("NEW.ID_PROG","YEAR","MIGRATION"))
+              d.ret.j$AGE_first <- "JUV"
 
 
-            d.ret.a$AGE_first <- "AD"
-            d.ret.j$AGE_first <- "JUV"
-
-
-            d.ret <- rbind(d.ret.a,
+            d.ret <- rbind(d.ret,
                            d.ret.j)
+
+            }
+
+
 
 
 
@@ -1072,7 +1045,6 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
                 if(nrow(d.ret.s)>0) {
                     if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
-
 
                     aggTableAll.tot$YEAR <- aggTableAll.tot$YEAR + 1
                     d.ret.s$YEAR <- d.ret.s$YEAR + 1
@@ -1188,6 +1160,79 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
     }#END for(s in site)
 }###END returnRate.site
 
+
+
+
+
+plot_local_sp <- function(dgg,species=NULL,nom_sp=NULL,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,
+                          facet_sp=TRUE,facet_group="AGE_first",
+                          y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",
+                          x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"),
+                          minYear = NULL, maxYear = NULL) {
+
+
+    if(!is.null(nom_sp)) t_nom_sp <- data.frame(species=species,nom_sp=nom_sp)
+
+    if(is.null(species)) species <- unique(dgg$SP)
+
+    if(!is.null(facet_group)) dgg$facet_group <- dgg[,facet_group]
+
+    for(sp in species) {
+
+        dgg.sp <- subset(dgg,SP==sp)
+
+        if(facet_sp) {
+            if(!is.null(nom_sp)) {
+                dgg.sp$facet <- as.character(t_nom_sp$nom_sp[t_nom_sp$species == sp])
+            }else {
+                dgg.sp$facet <- sp
+            }
+        }
+
+
+        if(is.null(minYear)) minYear <- min(dgg.sp[grep("Site",dgg.sp$gr),"YEAR"])-1
+        minYear <- max(minYear,min(dgg.sp$YEAR))
+
+        if(is.null(maxYear)) maxYear <- max(dgg.sp[grep("Site",dgg.sp$gr),"YEAR"])+1
+        maxYear <- min(maxYear,max(dgg.sp$YEAR))
+
+
+        gg <- ggplot(data=dgg.sp,aes(x=YEAR,y=med,colour=gr,fill=gr))
+
+        if(facet_sp) {
+            if(!is.null(facet_group)) {
+                gg <- gg + facet_grid(facet_group ~ facet,scales="free_y")
+            } else {
+                gg <- gg + facet_grid(.~ facet,scales="free_y")
+            }
+        } else {
+            if(!is.null(facet_group))
+                gg <- gg + facet_grid(facet_group ~. ,scales="free_y")
+        }
+
+        gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
+        gg <- gg + geom_line(size=1.5,alpha=.8)
+        gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
+        gg <- gg + geom_point(data=dgg.sp[grep("Site",dgg.sp$gr),],size=2.5)
+        gg <- gg + geom_point(data=dgg.sp[grep("Site",dgg.sp$gr),],colour="white",size=1,alpha=0.5)
+        gg <- gg + scale_colour_manual(values =vecCol,name="")
+        gg <- gg + scale_fill_manual(values =vecCol,guide=FALSE)
+        gg <- gg + labs(title=title_txt,y=y_lab,x=x_lab)
+        gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
+        gg <- gg + theme(legend.position="none")
+
+        if(print.fig) print(gg)
+
+
+        if(save.fig) {
+            ggfile <- paste("output/",s,"/bodyCondition_sp_site",s,"_",sp,".png",sep="")
+            catlog(c("Check",ggfile,":"),fileLog)
+            ggsave(ggfile,gg)
+            catlog(c("\n"),fileLog)
+        }
+
+    }# END for(sp in species)
+}### END plot_local_sp
 
 
 
