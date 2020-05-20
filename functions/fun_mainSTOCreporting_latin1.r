@@ -57,7 +57,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
     ## ##############################
     ## DEBUG declaration parametres
- ## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
+## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
 ##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
 ##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
 ##    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
@@ -171,7 +171,14 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
             if(is.null(site)) site <- siteN else site <- site[site %in% siteN]
             if(!is.null(site_start_from)) site <- site[which(site == site_start_from):length(site)]
 
+        } else {
+            if(is.null(site)) site <- sort(unique(d$NEW.ID_PROG))
+            if(!is.null(site_start_from)) site <- site[which(site == site_start_from):length(site)]
+
         }
+
+
+
 
         catlog(c("\nVERIFICATION DES REPERTOIRES DE SORTIE\n"),fileLog)
         repertoireSite(d,site)
@@ -247,12 +254,13 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 ##
                 bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
 
-                bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species="SYLATR",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+              d_body <- bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE,return.table=TRUE)
 
+                plot_local_sp(d_body,print.fig=TRUE,save.fig=FALSE,facet_sp=TRUE,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear = min(subset(d,NEW.ID_PROG == site)$YEAR)-1,maxYear = max(subset(d,NEW.ID_PROG == site)$YEAR))
             }
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
-                returnRate.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
+                returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 ##site <- "205"
        ###         returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
