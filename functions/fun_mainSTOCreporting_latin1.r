@@ -57,7 +57,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
     ## ##############################
     ## DEBUG declaration parametres
-file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
+## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
 ##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
 ##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
 ##    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
@@ -165,6 +165,20 @@ file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv"
 
     if(local) {
 
+
+
+        dsite <- data.frame(NEW.ID_PROG= unique(d$NEW.ID_PROG))
+
+
+        dsite$id_station_num <-  gsub("[a-z]","",dsite$NEW.ID_PROG)
+        dsite$id_station_letter <-  gsub("[0-9]","",dsite$NEW.ID_PROG)
+        dsite$id_station_letter <- ifelse(nchar(dsite$id_station_letter) == 0,"_",dsite$id_station_letter)
+        dsite$id_station_num <- str_pad(dsite$id_station_num, 4, pad = "0")
+        dsite$id_station_txt <- paste0(dsite$id_station_num,dsite$id_station_letter)
+
+        dsite <- dsite[order(dsite$id_station_txt),]
+
+
         if(onlyNew) {
             catlog(c("\nRECHERCHE STATION MISE A JOUR\n"),fileLog)
             siteN <- sationMAJ(d,fileLog)
@@ -178,20 +192,30 @@ file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv"
         }
 
 
+        dsite <- subset(dsite,NEW.ID_PROG %in% site)
 
+        nbsite <- nrow(dsite)
+        dsite2 <- data.frame(i=1:nbsite,site=dsite$NEW.ID_PROG)
+        print(dsite2)
 
         catlog(c("\nVERIFICATION DES REPERTOIRES DE SORTIE\n"),fileLog)
         repertoireSite(d,site)
 
         if(pdf_local){
-    catlog(c("\nCREATION DES RAPPORTS\n"),fileLog)
+            catlog(c("\nCREATION DES RAPPORTS\n"),fileLog)
 
-    for(s in site) {
-          catlog(c("\nsite:",s,"\n"),fileLog)
+            h1 <- Sys.time()
 
-                ds <- subset(d,NEW.ID_PROG == s)
-                run.rmd(id_station = s)
+            for(i in 1:2) {
+                ss <- as.character(dsite2$site[i])
 
+                catlog(c("\n",i,"/",nbsite," site:",ss,"\n"),fileLog)
+
+                ds <- subset(d,NEW.ID_PROG == ss)
+                run.rmd(id_station = ss)
+                cat("\n\n######################################\n\n")
+                estimDateFin(h1,nbsite,i)
+                cat("\n\n######################################\n\n")
             }
         } else { # ELSE if(pdf.local)
 
