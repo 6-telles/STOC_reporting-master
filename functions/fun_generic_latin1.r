@@ -97,10 +97,10 @@ sationMAJ <- function(d,fileLog) {
 ##' @return NULL
 ##' @author Romain Lorrilliere
 exploreData <- function(file="stoc_20180616.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv") {
-    fileBrut="stoc_full_20190425";fileDataClean="data.csv";fileData3sessions = "data3session.csv"
+    fileBrut="Extrait.txt";fileDataClean="data.csv";fileData3sessions = "data3session.csv"
     separateurData="\t" ;    decimalData="." #####
 
-    file <- paste("donnees/",fileBrut,sep="")
+    file <- paste("data_new/",fileBrut,sep="")
     d1 <-read.delim(file, header = TRUE, sep = separateurData ,dec=decimalData, na = "",stringsAsFactors=FALSE)
     file <- paste("output/",fileDataClean,sep="")
     d2 <- read.csv2(file)
