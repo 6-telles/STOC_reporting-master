@@ -240,4 +240,39 @@ save <- function() {
 
 
 
+                                      # Estimdatefin() :void
+                                        # -----------------------
+                                        # estime et affiche la duré de simulation restante
+                                        # et la date et l'heure de la fin de simulation
+                                        # utilise dans un process BOUCLE
+
+                                        # + h1: {DATE} date de début de simulation
+                                        # + repTot : {INT} nombre de répétitions total
+                                        # + repNow : {INT} nombre de répétitions effectuées
+
+estimDateFin <- function(h1,repTot,repNow){
+                                        # h2 {DATE} date et heure de l'instant
+  h2 <- Sys.time()
+                                        #  diffSec {DIFFTIME} temps écoulé entre h1 et h2 en sec
+  diffSec <- difftime(h2,h1,units="secs")
+                                        # timeByStep {DIFFTIME} temps par step
+  timeByStep <- diffSec / repNow
+                                        # timeToEnd {DIFFTIME} estimation duré simulation
+  timeToEnd <- (repTot - repNow) * timeByStep
+                                        # dateEnd {DATE} estimation date de fin
+  dateEnd <- format(Sys.time()+ as.numeric(timeToEnd,units="secs") ,format="%d/%m/%y %H:%M'%S")
+                                        # timeEstimate {FLOAT} nombre d'heures restantes
+  timeEstimate <-  round(as.numeric(timeToEnd,units="hours"),1)
+                                        # si moins d'1 heure
+  if (timeEstimate < 1){
+                                        # timeEstimata {FLOAT} nombre de minutes restantes
+    timeEstimate <-  round(as.numeric(timeToEnd,units="mins"))
+    cat("  * Estim:",timeEstimate,"minute(s) -> Fin batch:",dateEnd,"*\n")
+
+  }
+  else  cat("  * Estim:",timeEstimate,"heure(s) -> Fin batch:",dateEnd,"*\n")
+}
+
+
+
 
