@@ -57,7 +57,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
     ## ##############################
     ## DEBUG declaration parametres
-## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
+file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
 ##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
 ##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
 ##    seuilAvorteDuree= 4;seuilAvorteEvenement=5;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188)
@@ -110,7 +110,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
         if(carte) {
             catlog(c("\nCARTE\n"),fileLog)
             catlog(c("\nProcedure non disponible pour l'instant\n"),fileLog)
-            ## carteStation(d,site=site,fileLog=fileLog)
+             carteAll(d,fileLog=fileLog)
         }
 
         if(abondanceRelative){
@@ -120,7 +120,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
         if(variationAbondance) {
             catlog(c("\nVARIATION ABONDANCE\n"),fileLog)
-            abundanceYear.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+            abundanceYear.all(d,fileLog=fileLog,print.fig=TRUE,save.fig=TRUE,save.data_france=TRUE)
         }
 
         if(variationAbondanceEspece) {
