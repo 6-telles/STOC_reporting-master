@@ -1,6 +1,148 @@
 
 source("functions/fun_generic_latin1.r")
 
+
+
+
+
+##' .. content for \description{} (no empty lines) ..
+##'
+##' .. content for \details{} ..
+##' @title
+##' @param site
+##' @param d
+##' @param fileLog
+##' @return
+##' @author Romain Lorrilliere
+##'
+carteAll <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
+
+    require(rgdal)
+    require(ggmap)
+    require(maptools)
+    library(sf)
+    require(maps)
+
+    france <- map_data("france")
+
+
+    coordAll <- aggregate(cbind(d$LON,d$LAT) ~ d$NEW.ID_PROG,data=d,mean)
+    colnames(coordAll)[2:3] <- c("LON","LAT")
+    ID_exclu <- as.character(coordAll$NEW.ID_PROG[which(coordAll$LAT<40)])
+    coordAll <- subset(coordAll,LAT>40)
+
+    ## transformation en SpatialPointDataFrame
+                                        #   coordinates(coordAll) <- ~ LON + LAT
+    ## on déclare le système de coordonnées de référence: dégrés décimaux WGS84
+
+                                        #   proj4string(coordAll) <- CRS("+init=epsg:2154") # lambert 93
+
+    ## conversion en Lamber étendu
+                                        #  coordAllWGS84 <- spTransform(coordAll,CRS("+proj=longlat +ellps=WGS84")) #transformation en WGS84
+                                        #  coordAll2 <- data.frame(NEW.ID_PROG = coordAllWGS84@data,as.data.frame(coordAllWGS84@coords))
+                                        #  colnames(coordAll2)[1] <- "NEW.ID_PROG"
+                                        #  ID_exclu <- as.character(coordAll2$NEW.ID_PROG[which(coordAll2$LAT<40)])
+                                        #  coordAll2 <- subset(coordAll2,LAT>40)
+
+    anneeAll <- unique(subset(d,select=c("NEW.ID_PROG","FIRST.YEAR","LAST.YEAR")))
+    typeAll <-  unique(subset(d,select=c("NEW.ID_PROG","HABITAT")))
+
+                                        #  coordAll2 <- merge(coordAll2,typeAll,by="NEW.ID_PROG",all=TRUE)
+                                        #  coordAll2 <- merge(coordAll2,anneeAll,by="NEW.ID_PROG",all=TRUE)
+    colnames(coordAll)[1] <- "NEW.ID_PROG"
+    coordAll2 <- merge(coordAll,typeAll,by="NEW.ID_PROG",all=TRUE)
+    coordAll2 <- merge(coordAll2,anneeAll,by="NEW.ID_PROG",all=TRUE)
+    coordAll2$DUREE <- coordAll2$LAST.YEAR - coordAll2$FIRST.YEAR +1
+    fy <- min(coordAll2$FIRST.YEAR)
+    ly <- max(coordAll2$LAST.YEAR)
+
+    min_duree <- min(coordAll2$DUREE)
+    max_duree <- max(coordAll2$DUREE)
+    world1 <- sf::st_as_sf(map('world', plot = FALSE, fill = TRUE))
+    france <- sf::st_as_sf(map('france', plot = FALSE, fill = TRUE))
+
+
+        mytheme <- theme(plot.title = element_text(face = "bold",size = rel(1.2), hjust = 0.5),
+                         panel.background = element_rect(colour = NA),
+                         plot.background = element_rect(colour = NA),
+                         axis.title = element_text(face = "bold",size = rel(1)),
+                         axis.title.y = element_text(angle=90,vjust =2),
+                         axis.title.x = element_text(vjust = -0.2),
+                         legend.position=NULL)
+
+
+    if(add_title) {
+        title_txt <- paste0("Localisation des stations suivies entre ",fy," et ",ly)
+        subtitle_txt <- paste0("les stations actives de ",ly," sont cerclées en rouge")
+    } else {
+        title_txt <- ""
+        subtitle_txt <- ""
+    }
+
+    gg <- ggplot()
+    gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)+ geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
+    gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
+
+    gg <- gg + geom_point(data = subset(coordAll2,LAST.YEAR == ly),aes(LON,LAT), colour="red",size=3.5)
+    gg <- gg + geom_point(data = coordAll2,aes(LON,LAT, colour = DUREE),size=2,shape=19)
+    gg <- gg + labs(x="",y="",title=title_txt,subtitle=subtitle_txt)
+    gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'années\nde suivi",limits=c(min_duree,max_duree))
+
+    if(save.fig) {
+        ggfile <- paste("output/France/carte_France.png",sep="")
+        catlog(c("Check",ggfile,":"),fileLog)
+        ggsave(ggfile,gg,width=8, height=8,dpi=72)
+        catlog(c("\n"),fileLog)
+    }
+
+    if(print.fig)
+        print(gg)
+
+
+    habitats <- unique(coordAll2$HABITAT)
+
+    for(h in habitats) {
+
+
+        coordAll2h <- subset(coordAll2,HABITAT==h)
+        fy <- min(coordAll2h$FIRST.YEAR)
+
+    if(add_title) {
+        title_txt <- paste0("Localisation des stations de type ",h," suivies entre ",fy," et ",ly)
+        subtitle_txt <- paste0("les stations actives de ",ly," sont cerclées en rouge")
+    } else {
+        title_txt <- ""
+        subtitle_txt <- ""
+    }
+
+    gg <- ggplot()
+    gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)+ geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
+    gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
+
+    gg <- gg + geom_point(data = subset(coordAll2h,LAST.YEAR == ly),aes(LON,LAT), colour="red",size=3.5)
+    gg <- gg + geom_point(data = coordAll2h,aes(LON,LAT, colour = DUREE),size=2,shape=19)
+    gg <- gg + labs(x="",y="",title=title_txt,subtitle=subtitle_txt)
+    gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'années\nde suivi",limits=c(min_duree,max_duree))
+
+    if(save.fig) {
+          ggfile <- paste0("output/France/carte_France_",h,".png")
+        catlog(c("Check",ggfile,":"),fileLog)
+     ggsave(ggfile,gg,width=8, height=8,dpi=72)
+            catlog(c("\n"),fileLog)
+        }
+
+        if(print.fig)
+           print(gg)
+    }
+
+
+
+}
+
+
+
+
+
 speciesRelativeAbund.all <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
     require(ggplot2)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
@@ -85,8 +227,8 @@ speciesRelativeAbund.all <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, pr
             ggfile <- paste("output/France/nbCapture_France",habitat,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
             ppi <- 300
-            ggsave(ggfile,gg,width=11, height=8, unit="in",limitsize = FALSE)
-            catlog(c("DONE \n"),fileLog)
+        ggsave(ggfile,gg,width=13, height=8,dpi=72)
+                   catlog(c("DONE \n"),fileLog)
         }
 
     }
@@ -182,17 +324,17 @@ abundanceYear.all <- function(d,habitat=NULL,fileLog="log.txt",print.fig=FALSE,s
     gg <- gg + geom_line(aes(x=YEAR,y=CIquart_inf),colour="#08306b",size=0.6,alpha=.6)+ geom_line(aes(x=YEAR,y=CIquart_sup),colour="#08306b",size=0.6,alpha=.6)
     gg <- gg + geom_line(aes(x=YEAR,y=med),colour="#08306b",size=1.5,alpha=1)
 
-    gg <- gg + labs(list(title="Nombre d'adulte capturés (toutes espèces confondues)\npour 1 station standard (3 sessions et 120m de filet)",
+    gg <- gg + labs(title="Nombre d'adulte capturés (toutes espèces confondues)\npour 1 station standard (3 sessions et 120m de filet)",
                          x="Année",y="N/120m",
-                         colour="")) + facet_wrap(~HABITAT,nrow = 2)
+                         colour="") + facet_wrap(~HABITAT,nrow = 2)
 
     if(print.fig) print(gg)
 
     if(save.fig) {
         ggfile <- paste("output/France/N_adulte_France_",habitat,".png",sep="")
         catlog(c("Check",ggfile,":"),fileLog)
-        ggsave(ggfile,gg)
-        catlog(c("\n"),fileLog)
+     ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                 catlog(c("\n"),fileLog)
     }
 
     if(save.data_france){
@@ -299,8 +441,8 @@ abundanceSpeciesYear.all <- function(d,habitat=NULL,fileLog="log.txt",print.fig=
                     if(save.fig) {
                         ggfile <- paste("output/France/N_adulte_France_",h,"_",sp,".png",sep="")
                         catlog(c("Check",ggfile,":"),fileLog)
-                        ggsave(ggfile,gg)
-                        catlog(c("\n"),fileLog)
+                 ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                      catlog(c("\n"),fileLog)
                     }
 
                     if(save.data_france) {
@@ -373,16 +515,16 @@ productivityYear.all <- function(d,habitat=NULL,fileLog="log.txt",print.fig=FALS
     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
     gg <- gg + scale_x_continuous(breaks=pretty_breaks())
-    gg <- gg + labs(list(title="Productivité\n pour 1 station standard (3 sessions)",
-                         x="Année",y="Njuv/(Nad + Njuv)"))
+    gg <- gg + labs(title="Productivité\n pour 1 station standard (3 sessions)",
+                         x="Année",y="Njuv/(Nad + Njuv)")
 
     if(print.fig) print(gg)
 
     if(save.fig) {
         ggfile <- paste("output/France/productivite_all_",habitatDemande,".png",sep="")
         catlog(c("Check",ggfile,":"),fileLog)
-        ggsave(ggfile,gg)
-        catlog(c("\n"),fileLog)
+      ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                  catlog(c("\n"),fileLog)
     }
 
     if(save.data_france) {
@@ -452,16 +594,16 @@ productivityYearSpecies.all <- function(d,habitat=NULL,fileLog="log.txt",print.f
         ##   gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
         ## gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
 
-        gg <- gg + labs(list(title=paste("Productivité:",hh,"\n pour 3 sessions"),
-                             x="Année",y="Njuv/(Nad + Njuv)"))
+        gg <- gg + labs(title=paste("Productivité:",hh,"\n pour 3 sessions"),
+                             x="Année",y="Njuv/(Nad + Njuv)")
 
         if(print.fig) print(gg)
 
         if(save.fig) {
             ggfile <- paste("output/France/productivite_Espece_FRANCE_",hh,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
-            ggsave(ggfile,gg)
-            catlog(c("\n"),fileLog)
+       ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                    catlog(c("\n"),fileLog)
         }
     } # END for(hh in unique(aggTable$HABITAT))
 
@@ -501,7 +643,7 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
         gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
         gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"),name="AGE")
         gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
-        gg <- gg + labs(list(title="Condition corporelle des individus\ntoutes espèces confondue",x="Année",y="(MA-MA_mean_sp)/MA_mean_sp"))
+        gg <- gg + labs(title="Condition corporelle des individus\ntoutes espèces confondue",x="Année",y="(MA-MA_mean_sp)/MA_mean_sp")
 
         if(print.fig) print(gg)
 
@@ -509,8 +651,8 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
             ggfile <- paste("output/France/bodyCondition_all.png",sep="")
 
             catlog(c("Check",ggfile,":"),fileLog)
-            ggsave(ggfile,gg,width=5, height=6)
-            catlog(c("\n"),fileLog)
+         ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                   catlog(c("\n"),fileLog)
         }
 
 
@@ -552,7 +694,7 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
             gg <- gg + scale_x_continuous(breaks=pretty_breaks())
             gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"),name="AGE")
             gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
-            gg <- gg + labs(list(title=paste("Condition corporelle des individus pour les stations de type ",h,sep=""),x="Année",y="Masse/(Ecart à la taille moyenne + 1)"))
+            gg <- gg + labs(title=paste("Condition corporelle des individus pour les stations de type ",h,sep=""),x="Année",y="Masse/(Ecart à la taille moyenne + 1)")
 
 
             if(print.fig) print(gg)
@@ -560,8 +702,8 @@ bodyCondition.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondan
             if(save.fig) {
                 ggfile <- paste("output/France/bodyCondition_sp_",h,".png",sep="")
                 catlog(c("Check",ggfile,":"),fileLog)
-                ggsave(ggfile,gg,width=8, height=10)
-                catlog(c("\n"),fileLog)
+                ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                     catlog(c("\n"),fileLog)
             }
 
             if(save.data_france) {
@@ -608,8 +750,8 @@ returnRate.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceA
             d.a <- merge(d.a0,d.a2, by=c("BAGUE","NEW.ID_PROG","YEAR","MIGRATION"),all.x=TRUE)
             d.a$RETURN[is.na(d.a$RETURN)]<- FALSE
 
-            d.j0 <- unique(subset(d,AGE_first=="JUV",select=c("BAGUE","SP","NEW.ID_PROG","YEAR","MIGRATION")))
-            d.j2 <- unique(subset(d,AGE_first=="AD",select=c("BAGUE","NEW.ID_PROG","YEAR","MIGRATION")))
+            d.j0 <- unique(subset(d,AGE_first=="JUV" & HABITAT==h,select=c("BAGUE","SP","NEW.ID_PROG","YEAR","MIGRATION")))
+            d.j2 <- unique(subset(d,AGE_first=="AD" & HABITAT==h,select=c("BAGUE","NEW.ID_PROG","YEAR","MIGRATION")))
             d.j2$YEAR <- d.j2$YEAR - 1
             d.j2$RETURN <- TRUE
             d.j <- merge(d.j0,d.j2, by=c("BAGUE","NEW.ID_PROG","YEAR","MIGRATION"),all.x=TRUE)
@@ -710,7 +852,8 @@ returnRate.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceA
             if(save.fig) {
                 ggfile <- paste("output/France/returnRate_all_",h,".png",sep="")
                 catlog(c("Check",ggfile,":"),fileLog)
-                ggsave(ggfile,gg,width=7, height=6)
+
+                ggsave(ggfile,gg,width=12, height=11,dpi=72)
                 catlog(c("\n"),fileLog)
             }
 
@@ -732,8 +875,8 @@ returnRate.all <- function(d,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceA
             if(save.fig) {
                 ggfile <- paste("output/France/returnRate_sp_",h,".png",sep="")
                 catlog(c("Check",ggfile,":"),fileLog)
-                ggsave(ggfile,gg,width=7, height=9)
-                catlog(c("\n"),fileLog)
+             ggsave(ggfile,gg,width=12, height=11,dpi=72)
+                   catlog(c("\n"),fileLog)
             }
 
         } # END if(do.sp)
