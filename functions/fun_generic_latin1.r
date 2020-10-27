@@ -198,9 +198,9 @@ repertoireSite <-  function(d,site=NULL) {
 
 
 
-
-eligibleSpecies <- function(x) max(nchar(unlist(strsplit(x,"0"))))>4
-eligibleSpeciesSite <- function(x) max(nchar(unlist(strsplit(x,"0"))))>2
+## vérifie qu'un vecteur de chaînes de caractères possède au moins une chaîne de plus de n caractères (n=4 pour eligibleSpecies, n=2 pour eligibleSpeciesSite). Renvoie True ou False selon le résultat
+eligibleSpecies <- function(x) max(nchar(unlist(strsplit(x,"0"))))>4           ## Prend en argument un vecteur avec plusieurs chaines de caractères, il les sépare, compte leur nb de caractères et prend le nb max. Vérifie s'il est >4
+eligibleSpeciesSite <- function(x) max(nchar(unlist(strsplit(x,"0"))))>2       ## Prend en argument un vecteur avec plusieurs chaines de caractères, il les sépare, compte leur nb de caractères et prend le nb max. Vérifie s'il est >2
 
 
 returnRateAssessment <- function(x) return(length(x[x])/length(x))
@@ -208,14 +208,15 @@ returnRateAssessment <- function(x) return(length(x[x])/length(x))
 
 
 
-
+## Trie les stations dans l'ordre croissant (en supprimant d'éventuels doublons) et stocke leur ID dans la variable Site
 expDataStation <- function(d,site=NULL) {
-    if(is.null(site)) {
-        site <- sort(unique(d$NEW.ID_PROG))
+    if(is.null(site)) {                         ## si jamais on n'a pas demandé de station précise
+        site <- sort(unique(d$NEW.ID_PROG))     ## trie les ID des stations dans l'ordre croissant après avoir supprimé les ID en double
     }
 
     w <- read.csv2("output/WARNING_DATA.csv")
 ##browser()
+    ## stocke le nom de toutes les colonnes du tableau dans la variable listChampExport
     listChampExport <- c("cId_Data","NEW.ID_PROG","ID_PROG","DEPT","LOCALITE", "LIEUDIT","FIRST.YEAR","LAST.YEAR","NB.YEARS","THEME.SESSION","THEME","HABITAT","YEAR","NB.SESSION","FS.DEDUIT","FS.OUTPUT","NB.NF","DATE","MONTH","JULIANDAY","SESSION","BAGUEUR","FS","HS","DS","HEURE","H","NF","CENTRE","BAGUE","ACTION","SP","ESPECE","SEXE","AGE","AGE_first","LP","LP_borne","LP_mean","LP_indice_borne","MA","MA_borne","MA_mean","MA_indice_borne","LP_01", "LP_99","LP_seuilmin","LP_seuilmax","MA_01","MA_99","MA_seuilmin","MA_seuilmax","HABITAT_SP","MIGRATION")
 
     for(ss in site) {
