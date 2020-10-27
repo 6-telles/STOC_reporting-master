@@ -117,31 +117,33 @@ exploreData <- function(file="stoc_20180616.txt",fileDataClean="data.csv",fileDa
 
 
 
-## Prend un jeu de données, supprime les lignes duppliquées, compte le nombre de lignes qui restent et renvoie ?
+## Prend un jeu de données, supprime les lignes duppliquées, compte le nombre de lignes qui restent et renvoie le max de ?
 get_mode_max <- function(x) {
-    ux <- unique(x)
-    tab.x <- tabulate(match(x, ux))
-    ux <- as.numeric(ux[tab.x == max(tab.x)])
+    ux <- unique(x)                               ## supprime les doublons dans x
+    tab.x <- tabulate(match(x, ux))               ## compte et répertorie le nombre de fois où les lignes de la version ux et x sont identiques
+    ux <- as.numeric(ux[tab.x == max(tab.x)])     ## met sous format numérique le nombre max de fois où les lignes de la version ux et x sont identiques (je crois)
     return(max(ux))
 }
 
-
+## Prend un jeu de données, supprime les lignes duppliquées, compte le nombre de lignes qui restent et renvoie ?
 get_mode <- function(x) {
-    ux <- unique(x)
-    tab.x <- tabulate(match(x, ux))
-    ux <- ux[tab.x == max(tab.x)]
+    ux <- unique(x)                        ## supprime les doublons dans x
+    tab.x <- tabulate(match(x, ux))        ## compte et répertorie le nombre de fois où les lignes de la version ux et x sont identiques
+    ux <- ux[tab.x == max(tab.x)]          ## renvoie le nombre max de fois où les lignes de la version ux et x sont identiques (je crois)
     return(ux[1])
 }
 
-
+## Prend un jeu de données, compte le nombre d'occurences et en prend le vecteur avec les valeurs max, puis il en renvoie le minimum (à revoir) 
 nbSessionMostFreq <- function(X) {
     require(plyr)
-    cx <- count(X)
-    y <- cx$x[cx$freq==max(cx$freq)]
-    if(length(y)>1)y <- min(ifelse(y==2,NA,y),na.rm=TRUE)
+    cx <- count(X)                                           ## compte le nombre de fois où chaque valeur apparaît
+    y <- cx$x[cx$freq==max(cx$freq)]                         ## trouve le vecteur avec la valeur maximum pour la colonne freq
+    if(length(y)>1)y <- min(ifelse(y==2,NA,y),na.rm=TRUE)    ## si le vecteur a plus d'une valeur, il renvoie le minimum de ce vecteur ou NA si une velur est égale à 2
     return(y)
 }
 
+## Prend un jeu de données, compte le nombre d'occurences et en prend le vecteur avec les valeurs max avant de le convertir en caractères, 
+## puis il en renvoie le caractère s'il n'y en a qu'un, NA s'il y en avait plusieurs
 mostFreq <- function(X) {
     require(plyr)
     cx <- count(X)
@@ -151,15 +153,15 @@ mostFreq <- function(X) {
 }
 
 
-
+## Donne le language dans lequel coder ?
 Encoding_utf8 <- function(x) {
     Encoding(x) <- "UTF-8"
     return(x)
 }
 
 
-
-### verification de la presences des repertoire necessaire au script
+## Cherche les répertoires dont le script a besoin, s'ils n'existent pas la fonction les crée
+### verification de la presence des repertoires necessaires au script
 ### si absence la fonction les cree
 checkRepertories <-  function(rep) {
 ### si pas de rerpertoire les creer
@@ -179,7 +181,7 @@ repertoireHabitat <- function() {
 }
 
 
-
+## Regarde si un site en particulier a été demandé ou si tous l'ont été. Vérifie que le répertoire propre à chaque station existe
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
@@ -189,8 +191,8 @@ repertoireHabitat <- function() {
 ##' @return
 ##' @author Romain Lorrilliere
 repertoireSite <-  function(d,site=NULL) {
-    if(is.null(site)) lesSites <- unique(as.character(d$NEW.ID_PROG)) else lesSites <- site
-    for(s in lesSites) checkRepertories(s)
+    if(is.null(site)) lesSites <- unique(as.character(d$NEW.ID_PROG)) else lesSites <- site    ## si tous les sites sont observés, il stocke dans lesSites l'ID de chaque station une seule fois, sinon il stock les stations demandées
+    for(s in lesSites) checkRepertories(s)        ## il vérifie qu'un répertoire existe pour ce(s) site(s)
 
 }
 
