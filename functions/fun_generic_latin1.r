@@ -1,5 +1,5 @@
 
-
+## installe les packages nécessaires si besoin
 vecPackage=c("stringr","Hmisc","plyr","ggplot2","lubridate","grid","gridExtra","scales","rgdal","sp","ggmap","dplyr","data.table")
 ip <- installed.packages()[,1]
 
@@ -11,19 +11,19 @@ library(p,character.only=TRUE)
 
 
 
-
+## Permet de changer certaines chaines de caractères que R pourrait ne pas comprendre en un caractère lisible et compréhensible auquel ça correspond
 ##' ..cleaning french multi-octet characters file come from MS windows interface ..
 ##'
 ##' .. maybe not required ..
 ##' @title correctCaracteres
 ##' @param v: vector that contains french multi-octet characters
-##' @return v modifi�
+##' @return v modifié
 ##' @author Romain Lorrilliere
 correctCaracteres <- function(v)
 {
     v <-  as.character(v)
                                         # translation table to transform french multi-octet characters to simple characters
-    translationTable <- data.frame(code = c("\xe7","\xe9","\xb0","�","\U3e61653c","\U3e39653c","\xea","\xe8","\U3e39653c"),trad=c("c","e","","","e","e","e","e","e"))
+    translationTable <- data.frame(code = c("\xe7","\xe9","\xb0","°","\U3e61653c","\U3e39653c","\xea","\xe8","\U3e39653c"),trad=c("c","e","","","e","e","e","e","e"))
     translationTable$code <- as.character(translationTable$code)
     translationTable$trad <- as.character(translationTable$trad)
     for (i in 1:nrow(translationTable)) vv <- sub(tranOslationTable$code[i],translationTable$trad[i],vv)
@@ -31,14 +31,14 @@ correctCaracteres <- function(v)
 }
 
 
-
-##' .. recherche de ligne dupliqu�es ..
+## Vérifie s'il y a des doublons parmi les lignes de données et si c'est le cas, il renvoie la ligne concernée ainsi qu'un warning
+##' .. recherche de ligne dupliquées ..
 ##'
 ##' ..  ..
 ##' @title duplicationScanning
 ##' @param d: data.frame
-##' @param focus_field: vecteur des champs � tester
-##' @return les lignes dupliqu�e
+##' @param focus_field: vecteur des champs à tester
+##' @return les lignes dupliquée
 ##' @author Romain Lorrilliere
 duplicationScanning <-  function(d,focus_field=c("ID_PROG","ACTION","BAGUE","SP","DATE","HEURE","NF","AGE","SEXE"))
 {
@@ -59,7 +59,7 @@ duplicationScanning <-  function(d,focus_field=c("ID_PROG","ACTION","BAGUE","SP"
 ##'
 ##' .. content for \details{} ..
 ##' @title catlog
-##' @param txt : CHAR chaine de caract�re � ecrire
+##' @param txt : CHAR chaine de caractère à ecrire
 ##' @param fileLog : CHAR nom du fichier
 ##' @return
 ##' @author Romain Lorrilliere
@@ -70,13 +70,14 @@ catlog <- function(txt,fileLog) {
 
 
 
-
-##' recherche les stations de baguage ayant fait une mise � jour de leur donn�es
+## Trouve l'année la plus récente du tableau de données, cherche toutes les stations qui ont récolté des données cette année-là 
+## puis crée Vsite qui contient les noms de ces stations sous forme d'une chaine de caractères 
+##' recherche les stations de baguage ayant fait une mise à jour de leur données
 ##' .. content for \description{} (no empty lines) ..
 ##'
 ##' .. content for \details{} ..
 ##' @title stationMAJ
-##' @param d DATAFRAME les donn�es de baguages
+##' @param d DATAFRAME les données de baguages
 ##' @param fileLog
 ##' @return vSite: CHAR[] des noms des stations qui ont des nouvelles donnees
 ##' @author Romain Lorrilliere
@@ -87,6 +88,7 @@ sationMAJ <- function(d,fileLog) {
 
 }
 
+## Stocke les données brutes, nettoyées et 3 sessions sous un format dataframe bien aéré et lisible de façon à pouvoir détecter les erreurs plus aisément (je crois)
 ##' utile pour recherche les eureurs dans les data
 ##'
 ##' .. content for \details{} ..
@@ -115,7 +117,7 @@ exploreData <- function(file="stoc_20180616.txt",fileDataClean="data.csv",fileDa
 
 
 
-
+## Prend un jeu de données, supprime les lignes duppliquées, compte le nombre de lignes qui restent et renvoie ?
 get_mode_max <- function(x) {
     ux <- unique(x)
     tab.x <- tabulate(match(x, ux))
@@ -242,22 +244,22 @@ save <- function() {
 
                                       # Estimdatefin() :void
                                         # -----------------------
-                                        # estime et affiche la dur� de simulation restante
+                                        # estime et affiche la duré de simulation restante
                                         # et la date et l'heure de la fin de simulation
                                         # utilise dans un process BOUCLE
 
-                                        # + h1: {DATE} date de d�but de simulation
-                                        # + repTot : {INT} nombre de r�p�titions total
-                                        # + repNow : {INT} nombre de r�p�titions effectu�es
+                                        # + h1: {DATE} date de début de simulation
+                                        # + repTot : {INT} nombre de répétitions total
+                                        # + repNow : {INT} nombre de répétitions effectuées
 
 estimDateFin <- function(h1,repTot,repNow){
                                         # h2 {DATE} date et heure de l'instant
   h2 <- Sys.time()
-                                        #  diffSec {DIFFTIME} temps �coul� entre h1 et h2 en sec
+                                        #  diffSec {DIFFTIME} temps écoulé entre h1 et h2 en sec
   diffSec <- difftime(h2,h1,units="secs")
                                         # timeByStep {DIFFTIME} temps par step
   timeByStep <- diffSec / repNow
-                                        # timeToEnd {DIFFTIME} estimation dur� simulation
+                                        # timeToEnd {DIFFTIME} estimation duré simulation
   timeToEnd <- (repTot - repNow) * timeByStep
                                         # dateEnd {DATE} estimation date de fin
   dateEnd <- format(Sys.time()+ as.numeric(timeToEnd,units="secs") ,format="%d/%m/%y %H:%M'%S")
