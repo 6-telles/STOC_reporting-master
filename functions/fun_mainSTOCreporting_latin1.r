@@ -6,34 +6,33 @@
 ##'
 ##' .. content for \details{} ..
 ##' @title mainSTOCreporting
-##' @param file CHAR nom du fichier des données brut dans le rep donnees
-##' @param fileDataClean CHAR nom du fichier des donnees propre pour ecriture et lecture
-##' @param fileData3sessions CHAR nom du fichier des donnees propre des 3 sessions selectionnées pour ecriture et lecture
-##' @param lastYear NULL ou NUM dernière annees conciderée
-##' @param importationData CHAR parmi c("brut","clean","3sessions","non") permet de selectionné les données importées
-##' @param all BOOL pour faire les graphes a l'echelle national
-##' @param local BOOL pour faire les graphes a l'echelle de la station
-##' @param site NULL ou CHAR[] nom des stations a traiter
-##' @param seuilAbondanceAnneeAll NUM seuil  nombre d'individus pour une annees
-##' @param seuilAbondanceAnneeSite NUM seuil nombre d'ind
-##' ividus pour un site pour une annees
-##' @param seuilAvorteDuree NUM duree min en heure d'une session
-##' @param seuilAvorteEvenement NUM nombre de capture min pour valider une session
-##' @param seuilExclusionDelai NUM nombre de jour min entre 2 sessions
-##' @param dateRefDefaut NUM[3] 3 date julien de reference des sessions
-##' @param selectedSessionPlot BOOL fabrication des sortie et graphes sessions conservées
+##' @param file CHAR nom du fichier des données brutes dans le rep données
+##' @param fileDataClean CHAR nom du fichier des données propres pour écriture et lecture
+##' @param fileData3sessions CHAR nom du fichier des données propres des 3 sessions selectionnées pour écriture et lecture
+##' @param lastYear NULL ou NUM dernière année considerée
+##' @param importationData CHAR parmis c("brut","clean","3sessions","non") permet de sélectionner les données importées
+##' @param all BOOL pour faire les graphes à l'échelle nationale
+##' @param local BOOL pour faire les graphes à l'échelle de la station
+##' @param site NULL ou CHAR[] nom des stations à traiter
+##' @param seuilAbondanceAnneeAll NUM seuil  nombre d'individus pour une année
+##' @param seuilAbondanceAnneeSite NUM seuil nombre d'individus pour un site pour une année
+##' @param seuilAvorteDuree NUM durée min en heure d'une session
+##' @param seuilAvorteEvenement NUM nombre de captures min pour valider une session
+##' @param seuilExclusionDelai NUM nombre de jours min entre 2 sessions
+##' @param dateRefDefaut NUM[3] 3 dates julien de référence des sessions
+##' @param selectedSessionPlot BOOL fabrication des sorties et graphes sessions conservées
 ##' @param carte BOOL fabrication des graphes carte
-##' @param abondanceRelative BOOL fabrication des graphes boite à moustache
+##' @param abondanceRelative BOOL fabrication des graphes boîte à moustache
 ##' @param variationAbondance BOOL fabrication des graphes variation d'abondance aggrégé
-##' @param variationAbondanceEspece BOOL fabrication des graphes variation abondance espece
+##' @param variationAbondanceEspece BOOL fabrication des graphes variation abondance espèces
 ##' @param productivite BOOL fabrication des graphes productivité aggregé
-##' @param productiviteEspece BOOL fabrication des graphes productivité espece
-##' @param conditionCorporelle BOOL fabrication des graphes condition coporelle
+##' @param productiviteEspece BOOL fabrication des graphes productivité espèces
+##' @param conditionCorporelle BOOL fabrication des graphes condition corporelle
 ##' @param retour BOOL fabrication des graphes taux de retour
 ##' @param pdf_france BOOL fabrication du pdf national
 ##' @param pdf_local BOOL fabrication des pdf des sites
-##' @param dataStation BOOL fabrication des tables de donnees pour chaque sation
-##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles donnnees
+##' @param dataStation BOOL fabrication des tables de données pour chaque sation
+##' @param onlyNew BOOL analyse seulement les stations qui ont de nouvelles données
 ##' @return NULL
 ##' @author Romain Lorrilliere
 mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileData3sessions = "data3session.csv",
@@ -43,7 +42,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
                               selectedSessionPlot=TRUE,carte = TRUE,abondanceRelative=TRUE ,variationAbondance=TRUE,variationAbondanceEspece=TRUE,
                               productivite=TRUE,productiviteEspece=TRUE,conditionCorporelle=TRUE,retour=TRUE,
                               pdf_france=FALSE,dataStation=TRUE,onlyNew=TRUE,pdf_local=TRUE) {
-    start <- Sys.time()    ## heure de demarrage est utilisée comme identifiant par défaut
+    start <- Sys.time()    ## heure de démarrage est utilisée comme identifiant par défaut
 
     fileLog <- paste("log",format(start, "%Y-%m-%d_%HH%M"),".txt",sep="")
 
@@ -56,7 +55,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
 
     ## ##############################
-    ## DEBUG declaration parametres
+    ## DEBUG déclaration paramètres
 ## file="test2.csv";fileDataClean="data.csv";fileData3sessions = "data3session.csv" #####
 ##    lastYear=NULL;importationData="brut";all=TRUE;local=TRUE;site=NULL #####
 ##    seuilAbondanceAnneeAll=30;seuilAbondanceAnneeSite=10 #####
@@ -136,12 +135,12 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
          }
 ## Si fabrication des graphes productivité aggregé, sauvegarde dans data_france
         if(productivite) {
-            catlog(c("\nPRODUCTIVITEE\n"),fileLog)
+            catlog(c("\nPRODUCTIVITE\n"),fileLog)
             productivityYear.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
         }
 ## Si fabrication des graphes productivité espece, sauvegarde dans data_france
         if(productiviteEspece) {
-            catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
+            catlog(c("\nPRODUCTIVITE PAR ESPECE\n"),fileLog)
             productivityYearSpecies.all(d,fileLog=fileLog,print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 
 
@@ -182,7 +181,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
         dsite$id_station_letter <- ifelse(nchar(dsite$id_station_letter) == 0,"_",dsite$id_station_letter)
         dsite$id_station_num <- str_pad(dsite$id_station_num, 4, pad = "0")
         dsite$id_station_txt <- paste0(dsite$id_station_num,dsite$id_station_letter)
-
+## Liste des noms des stations dans l'ordre croissant
         dsite <- dsite[order(dsite$id_station_txt),]
 
 ## Si seulement analyse des stations qui ont de nouvelles donnnees, recherche de stations à mettre à jour
@@ -202,21 +201,23 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
         }
 
-
+## Liste des nouveaux noms des stations dans l'ordre croissant
         dsite <- subset(dsite,NEW.ID_PROG %in% site)
-
+## Définit le nombre de stations étudiées
         nbsite <- nrow(dsite)
+## Création d'un tableau numérotant chaque station avec en face son nouveau nom
         dsite2 <- data.frame(i=1:nbsite,site=dsite$NEW.ID_PROG)
         print(dsite2)
 
         catlog(c("\nVERIFICATION DES REPERTOIRES DE SORTIE\n"),fileLog)
+## Liste des stations 
         repertoireSite(d,site)
-
+## Si les pdf des sites sont fabriqués
         if(pdf_local){
             catlog(c("\nCREATION DES RAPPORTS\n"),fileLog)
-
+## Heure de création
             h1 <- Sys.time()
-
+## POURQUOI I IN 1:2 ?
             for(i in 1:2) {
                 ss <- as.character(dsite2$site[i])
 
@@ -224,50 +225,51 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
                 ds <- subset(d,NEW.ID_PROG == ss)
                 run.rmd(id_station = ss)
+              ## Affichage durée estimée pour la création du pdf de la station
                 cat("\n\n######################################\n\n")
                 estimDateFin(h1,nbsite,i)
                 cat("\n\n######################################\n\n")
             }
         } else { # ELSE if(pdf.local)
-
+## Si fabrication des sorties et des graphes pour les sessions conservées, affichage des sessions sélectionnées pour chaque station
             if(selectedSessionPlot) {
                 catlog(c("\nSESSIONS SELECTIONNEES\n"),fileLog)
                 selectedSession.site(site=site,d,fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
-
+## Si fabrication des tables de données pour chaque sation, renvoie la liste des nouveaux noms des stations avec suppression des éléments identiques 
             if(dataStation) {
                 catlog(c("\nDATA STATION\n"),fileLog)
                 expDataStation(d,site=site,print.fig=TRUE,save.fig=FALSE)
             }
-
+## Si fabrication des graphes carte, chargement des outils pour afficher la carte
             if(carte) {
                 catlog(c("\nCARTE\n"),fileLog)
                 carteStation(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=TRUE,add_title=FALSE)
             }
-
+## Si fabrication des graphes boîte à moustache, voir et comprendre fonction speciesRelativeAbund.site dans le fichier fun_indicateurs_local_latin1.r
             if(abondanceRelative){
                 catlog(c("\nABONDANCE RELATIVE\n"),fileLog)
                 tab_ab <- speciesRelativeAbund.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,return_table=TRUE)
             }
-
+## Si fabrication des graphes variation d'abondance aggrégé, voir et comprendre fonction abundanceYear.site dans le fichier fun_indicateurs_local_latin1.r
             if(variationAbondance) {
                 catlog(c("\nVARIATION ABONDANCE\n"),fileLog)
 
                 abundanceYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
 
             }
-
+## Si fabrication des graphes variation d'abondance des espèces, voir et comprendre fonction abundanceSpeciesYear.site dans le fichier fun_indicateurs_local_latin1.r
             if(variationAbondanceEspece) {
                 catlog(c("\nVARIATION ABONDANCE PAR ESPECE\n"),fileLog)
                 abundanceSpeciesYear.site(d,site=site,species=vec_sp,nom_sp=sp_nom,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=sp_nom)
                  ## abundanceSpeciesYear.site(d,site=site,species="PHYCOL",nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
             }
-
+## Si fabrication des graphes productivité aggregé, voir et comprendre fonction productivityYear.site dans le fichier fun_indicateurs_local_latin1.r
             if(productivite) {
                 catlog(c("\nPRODUCTIVITEE\n"),fileLog)
                 productivityYear.site(d,site=site,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE)
             }
-
+## Si fabrication des graphes productivité espèces, voir et comprendre fonction productivityYearSpecies.site dans le fichier fun_indicateurs_local_latin1.r
             if(productiviteEspece) {
                 catlog(c("\nPRODUCTIVITEE PAR ESPECE\n"),fileLog)
                 productivityYearSpecies.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
@@ -277,7 +279,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
             }
 
-
+## Si fabrication des graphes condition corporelle, voir et comprendre fonction bodyCondition.site dans le fichier fun_indicateurs_local_latin1.r
             if(conditionCorporelle) {
                 catlog(c("\nCONDITION CORPORELLE\n"),fileLog)
 
@@ -286,13 +288,13 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
  bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=TRUE)
 
-##
                 bodyCondition.site(d,site=site,seuilAbondanceAnnee=seuilAbondanceAnneeAll,seuilAbondanceAnneeSite,fileLog=fileLog,add_title=FALSE)
 
               d_body <- bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE,return.table=TRUE)
 
                 plot_local_sp(d_body,print.fig=TRUE,save.fig=FALSE,facet_sp=TRUE,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear = min(subset(d,NEW.ID_PROG == site)$YEAR)-1,maxYear = max(subset(d,NEW.ID_PROG == site)$YEAR))
             }
+## Si fabrication des graphes taux de retour, voir et comprendre fonction returnRate.site dans le fichier fun_indicateurs_local_latin1.r
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
                 returnRate.site(d,site=site,community_level=TRUE,species_level=FALSE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
@@ -331,7 +333,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
 
 
-
+## Affichage heure de fin et durée de la fabrication du rapport
     end <- Sys.time() ## heure de fin
 
     catlog(c("\n\n\n     # Fin du process:",format(end, "%Y-%m-%d %H:%M\n")),fileLog)
