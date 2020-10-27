@@ -29,6 +29,13 @@
 ##' @param dateRefDefaut
 ##' @return
 ##' @author Romain Lorrilliere
+
+
+## Importation du fichier texte contenant les données.
+## Création d'un fichier data.csv, paramétré de sorte que les décimales sont indiquées par des "."
+## Création d'un fichier log
+## Définition de seuils minimum : durée min de 3h, nombre de captures min = 4, 10 jours min entre deux sessions
+## dateRefDefaut = dates de références par défaut pour les sessions 1, 2 et 3 : 18 mai, 14 juin, 7 juillet
 import <- function(file="extrait.txt",lastYear=NULL,
                    decimalData=".",fileDataClean="data.csv",fileLog="log.txt",
                    seuilAvorteDuree= 3, seuilAvorteEvenement=4,seuilExclusionDelai = 10,dateRefDefaut =c(138,165,188)) {
@@ -41,8 +48,9 @@ import <- function(file="extrait.txt",lastYear=NULL,
                                    ##        lastYear = NULL #####
                                    ##    seuilAvorteDuree= 3; seuilAvorteEvenement=4;seuilExclusionDelai = 10;dateRefDefaut =c(138,165,188) ###
 
-
+  
     catlog(c("\n====================================\n              Suppression error files if exists\n==================================== \n\n"),fileLog)
+    ## Efface le fichier WARNING_DATA s'il existe
     if (file.exists("output_preparation/WARNING_DATA.csv")) {
         file.remove("output_preparation/WARNING_DATA.csv")
         catlog(c("    -> WARNING_DATA.csv removed\n"),fileLog)
@@ -52,53 +60,64 @@ import <- function(file="extrait.txt",lastYear=NULL,
     catlog(c("\n====================================\n              IMPORTATION\n==================================== \n\nfile : ",
              file,"\n\n"),fileLog)
                                         # d: dataset
+    ## Transformation de file en chaîne de caractères pour être utilisé dans read.delim. File devient : "data_new/extrait.txt" => renseignement du chemin d'accès
     file <- paste("data_new/",file,sep="")
+    ## Lecture du fichier file, avec la première ligne utilisée comme en-tête de colonne et la tabulation (\t) comme séparateur. On l'appelle d.
     d <-read.delim(file, header = TRUE, sep = "\t" ,dec=decimalData, na = "",stringsAsFactors=FALSE,encoding="latin-1")
+    ## /!\ Deux lignes à l'utilité discutable car code fonctionnel lorsqu'inactives.
+    ## Apparemment, ces deux lignes permettent de réessayer différents types de séparation afin de réaliser un tableau de données d fonctionnel s'il ne l'est pas avec
+    ## des tab comme séparateurs. Probablement des fonctions de débogage
     if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = ";" ,dec=",", na = "",stringsAsFactors=FALSE,encoding="latin-1")
 
     if(ncol(d)==1)     d <-read.delim(file, header = TRUE, sep = "," ,dec=".", na = "",stringsAsFactors=FALSE,encoding="latin-1")
 
 
 
-    ## suppression des valeurs des LIEUDIT qui ont les localisation
+    ## suppression des valeurs des LIEUDIT qui ont les localisations
 
     d$LIEUDIT[grep("LAT=",d$LIEUDIT)] <- ""
 
-   # d <- d %>% mutate_if(is.character, Encoding_utf8)
+    # d <- d %>% mutate_if(is.character, Encoding_utf8)
 
-
+    ## Corrige le bug d'encodage du début du tableau
     if(length(grep("..",colnames(d)[1]))>0) colnames(d)[1] <- gsub(".\\.{2}","",colnames(d)[1])
 
-
+  
     catlog(c("    => Initial number of lines: ",nrow(d),"\n"),fileLog)
+    ## Importation du fichier des espèces sous le nom dsp (data species)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
 
+    ## Importation des données d'altitude des stations et mise en forme du tableau de données
     altitude <- read.csv("library/coordonnees_altitude_site.csv",stringsAsFactors=FALSE)
+    ## On renomme les colonnes de longitude et latitude et on nomme les lignes avec le numéro de la station
     rownames(altitude) <- altitude$NEW.ID_PROG
     colnames(altitude)[2:3] <- c("LONG2","LAT2")
 
-   ## minmax <- read.csv("library/measuresMinMax_2017-05-22.csv",stringsAsFactors=FALSE)
+    ## minmax <- read.csv("library/measuresMinMax_2017-05-22.csv",stringsAsFactors=FALSE)
 
 
 
-
+### Création de colonnes de travail dans la base de données d
+  
 ### new column SP for SP code without ssp information
     catlog(c("\n====================================\n\n - Ajout de colonnes:\n------------------------------------\n"),fileLog)
     catlog(c("    -> SP avec les 6 premiers caractere de ESPECE\n"),fileLog)
+    ## Extraction des entrées d'espèce et création d'une colonne SP
     d$SP <-  substr(d$ESPECE,1,6)
 
-    ## new colum H
+    ## new column H
     catlog(c("    -> H pour la tranche horaire de la capture\n"),fileLog)
+    ## Extraction des données horaires sous forme numérique. L'heure est sous forme HH:MM:SS, on extrait seulement les deux premiers caractères HH et on les convertit sous forme numérique
     d$H <-  as.numeric(substring(d$HEURE,1,2))
 
     ## format of date
-    d$DATE<-as.Date(d$DATE, format = "%d/%m/%Y")
+    d$DATE <-  as.Date(d$DATE, format = "%d/%m/%Y")
 
     ## new column JULIANDAY
     catlog(c("    -> JULIANDAY\n"),fileLog)
     d$JULIANDAY <- yday(d$DATE)
 
-    ## new colum MONTH
+    ## new column MONTH
     catlog(c("    -> MONTH\n"),fileLog)
     d$MONTH <- month(d$DATE)
 
@@ -108,14 +127,18 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
                                        # dd <- d
 
+    ## Si la dernière année de travail "lastYear" est définie NULL, elle est égale au max de la colonne YEAR
     if(is.null(lastYear)) lastYear <- max(d$YEAR)
 
     catlog(c("\n====================================\n              RESUME DE LA TABLE IMPORTEE\n==================================== \n\nfile : ",
              file,"\n\n"),fileLog)
+    ## Création du tableau tCont.bague
     tCont.bague <- aggregate(BAGUE~ID_PROG + YEAR,d,length)
     colnames(tCont.bague)[3] <- "NB_LIGNE_IMPORT"
+    ## Création du tableau tCont.session
     tCont.session <- aggregate(DATE~ID_PROG + YEAR ,unique(subset(d,select=c(ID_PROG,DATE,YEAR))),length)
     colnames(tCont.session)[3] <- "NB_DATE_IMPORT"
+    ## Création de tCont en fusionnant tCont.bague et tCont.session
     tCont <- merge(tCont.bague,tCont.session,by=c("ID_PROG","YEAR"))
     tCont <- tCont[order(tCont$ID_PROG,tCont$YEAR),]
 
@@ -222,7 +245,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ## select year lower and equal to lastYear
 
-    ## de data apres derni�re annee lastYear
+    ## de data apres dernière annee lastYear
     de <- subset(d,YEAR>lastYear)
     if(nrow(de) > 0) {
      de.warning <- data.frame(error = "YEAR",commmentError="hors limit",suppression= "ligne", subset(de,select = selectedColumns))
@@ -477,8 +500,8 @@ import <- function(file="extrait.txt",lastYear=NULL,
     coordinates(altitude) <- ~ LONG2 + LAT2
     proj4string(altitude) <- CRS("+init=epsg:2154") # lambert 93
 
-    ## conversion en Lamber �tendu
-    ## altitude fichier propre de Manon des altitude et des coordonnee import� en debut de script
+    ## conversion en Lamber étendu
+    ## altitude fichier propre de Manon des altitude et des coordonnee importé en debut de script
     altitude <- spTransform(altitude,CRS("+proj=longlat +ellps=WGS84")) #transformation en WGS84
 
     altitude <- data.frame(altitude@data,as.data.frame(altitude@coords))
@@ -987,7 +1010,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",llp,"LP seem aberrant\n"),fileLog)
         catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
-        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronqu�e", t.warning.lp)
+        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronquée", t.warning.lp)
         t.warning.lp <-  t.warning.ma[order( t.warning.lp$BAGUE, t.warning.lp$DATE),]
 
         if (file.exists("output_preparation/WARNING_DATA.csv"))
@@ -1251,7 +1274,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ggnf1 <- ggplot(dnf,aes(x=FS,y=FS.DEDUIT,colour=as.factor(YEAR)))+geom_abline(slope=1,intercept = 0,colour="gray")+ coord_fixed(xlim=c(0,400),ylim=c(0,400),ratio=1)
     ggnf1 <- ggnf1 + geom_smooth(method="lm",colour="red")+ annotate("text", label = text.equa,x=80,y=400,size=3,colour="red")+ geom_point()
-    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les donn�es",colour="Ann�es"))
+    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les données",colour="Années"))
 
     ggfile <- paste("output_preparation/estimationFS_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1259,7 +1282,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     catlog(c("\n"),fileLog)
 
 
-    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les donn�es",x="FS.DEDUIT - FS"))
+    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les données",x="FS.DEDUIT - FS"))
 
     ggfile <- paste("output_preparation/estimationFS_histograme_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1399,7 +1422,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     rownames(tDateRef) <- stations
 
 
-   catlog(" 1) Calcul des dates de reference pour les stations � 3 et plus de 4 sessions\n",fileLog)
+   catlog(" 1) Calcul des dates de reference pour les stations à 3 et plus de 4 sessions\n",fileLog)
 
     t.nbSession3 <- subset(t.nbSessionMostFreq,TYPE==3)
     t.nbSessionYear3 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession3$NEW.ID_PROG)
@@ -1441,7 +1464,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
 cat("\n")
 
-    catlog(" 2)  Calcul des dates de reference pour les stations � 4 sessions\n",fileLog)
+    catlog(" 2)  Calcul des dates de reference pour les stations à 4 sessions\n",fileLog)
 
     t.nbSession4 <- subset(t.nbSessionMostFreq,TYPE==4)
     t.nbSessionYear4 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession4$NEW.ID_PROG)
