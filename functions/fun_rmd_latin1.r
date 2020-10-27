@@ -5,10 +5,12 @@
 ## source("functions/fun_generic_latin1.r")
 source("functions/fun_indicateurs_local_latin1.r")
 
+## packages nécessaires au script
 vecPackage=c("data.table","devtools","dplyr","ggplot2","ggpubr","lubridate","reshape2","knitr","kableExtra","pander","stringr")
 
 ip <- installed.packages()[,1]
 
+## pour chaque package nécessaire, on teste s'il est installé ; si non, on l'installe
 for(p in vecPackage) {
     if (!(p %in% ip))
         install.packages(pkgs=p,repos = "http://cran.univ-paris1.fr/",dependencies=TRUE)
@@ -46,7 +48,7 @@ run.rmd <- function(file.rmd="functions/rmd_stoc_reporting_utf8.rmd",rep.out="ou
      if(!(rep.out) %in% dir()) {
          cat("\n Le repertoire de sortie:",rep.out,"est manquant\n")
          dir.create(rep.out,showWarnings=FALSE)
-         cat("\n R�pertoire cr�er !!\n")
+         cat("\n Répertoire créer !!\n")
      }
 
       rmarkdown::render(file.rmd,output_file=file.out,output_dir=rep.out,output_format = format,clean=render.clean,encoding="utf-8",params = list(set_rep = rep, set_file_data = file.data,set_fileLog = fileLog,set_site = id_station, set_year = year, set_save_fig = save.fig))
