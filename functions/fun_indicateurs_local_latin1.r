@@ -25,49 +25,55 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fi
     ##    aggSession <- read.csv2(fileSave,stringsAsFactors=FALSE) #####
     ##    fileSave <- "output/SessionReference.csv" #####
     ##    aggSessionRef <-  read.csv2(fileSave,stringsAsFactors=FALSE) #####
-
+    
+## Si le tableau AggAllSession est vide, alors on lui attribue le tableau summarySession (rÃ©sultats sessions) du dossier data_France
     if(is.null(aggAllSession)) {
         fileSave <- "data_France/summarySession.csv"
         aggAllSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
     }
-
+## Si le tableau aggSession est vide, alors on lui attribue le tableau historicSession (horaires sessions) du dossier data_France
     if(is.null(aggSession)) {
         fileSave <- "data_France/historicSession.csv"
         aggSession <- read.csv2(fileSave,stringsAsFactors=FALSE)
     }
-
+## Si le tableau aggSessionRef est vide, alors on lui attribue le tableau SessionReference (rÃ©fÃ©rences stations= num+jour session) du dossier data_France
     if(is.null(aggSessionRef)) {
         fileSave <- "data_France/SessionReference.csv"
         aggSessionRef <-  read.csv2(fileSave,stringsAsFactors=FALSE)
     }
 
-
+## Conversion en caractÃ¨res de la colonne SESSION (1 2 3 ou 0 si non prise en compte) des trois tableaux
     aggSession$SESSION <- as.character(aggSession$SESSION)
     aggSessionRef$SESSION <- as.character(aggSessionRef$SESSION)
     aggAllSession$SESSION <- as.character(aggAllSession$SESSION)
 
 
 
-
+## Si on ne prÃ©cise pas de site particulier, triage des stations dans l'ordre ascendant aprÃ¨s conversion en caractÃ¨res
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
-
+    
+## Pour chaque station :
     for(ss in site)
     {
-                                        #
+        ## SÃ©lection dans le tableau AggSession des lignes correspondant Ã  la station pour lesquelles une date est prÃ©cisÃ©e
         aggSession.s <- subset(aggSession,NEW.ID_PROG == ss & !is.na(JULIANDAY))
+        ## ????????????????????????????????????????????????????????????
         minYear <- max(min(aggSession.s$YEAR)-2,min(aggSession$YEAR))
         maxYear <- min(max(aggSession.s$YEAR)+2,max(aggSession$YEAR))
-
+        ## Isole les lignes de aggSessionRef correspondant Ã  la station
         aggSessionRef.s <- subset(aggSessionRef,NEW.ID_PROG == ss )
 
-
+        ## Associe des couleurs aux valeurs de la colonne SESSION
         vcolour <- c("0"="#737373","1" = "#1c30f3","2" = "#951cf3","3" = "#f90d28","0" = "#1e1112")
+        ## CrÃ©ation d'intervalles de dates pour les sessions
         vdate <- c("05-01","05-15","06-01","06-15","07-01","07-15","08-01")
+        ## CrÃ©ation d'un intervalle de dates complÃ¨tes au format numÃ©rique
         vdate <- as.numeric(format(as.Date(paste(2000,vdate,sep="-")),"%j"))-1
+        ## Tri dans l'ordre croissant des dates du vecteur vdate et celles de aggSessionRef
         vdate <- sort(c(vdate,aggSessionRef.s$JULIANDAY))
-
-        if(add_title) title_txt <- paste("Date des sessions selectionnées pour la station",ss) else title_txt <- ""
-
+## Si on veut mettre un titre, le graphique aura pour titre "Date des sessions selectionnÃ©es pour la station nÂ°__", sinon pas de titre
+        if(add_title) title_txt <- paste("Date des sessions selectionnÃ©es pour la station",ss) else title_txt <- ""
+## CrÃ©ation du graphique (figure 2 du rapport) 
         gg <- ggplot(data=aggAllSession,aes(x=YEAR,y=med,colour=SESSION,fill=SESSION,group=paste(SESSION)))
         gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.2,colour=NA)
         gg <- gg + geom_line(aes(y=CIquart_inf),size=0.6,alpha=.3)+ geom_line(aes(y=CIquart_sup),size=0.6,alpha=.3)
@@ -81,15 +87,15 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fi
         gg <- gg + scale_shape_manual(values=c("TRUE"=19,"FALSE"=8),label=c("TRUE"="oui","FALSE"="non"),breaks=c(TRUE,FALSE),name="Session valide")
         gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
         gg <- gg + scale_y_continuous(labels = function(x) format(as.Date(as.character(x), "%j"), "%d-%m"),breaks = vdate)
-        gg <- gg + labs(title=title_txt,x="Année",y="Date")
-
+        gg <- gg + labs(title=title_txt,x="AnnÃ©e",y="Date")
+## Si on veut sauvegarder la figure, crÃ©ation d'un dossier pour la station dans le dossier output
         if(save.fig) {
             ggfile <- paste("output/",ss,"/session_",ss,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
             ggsave(ggfile,gg)
             catlog(c("\n"),fileLog)
         }
-
+## Si on veut afficher la figure, affichage de la figure
         if(print.fig) print(gg)
 
                                         #        cmdMove <- paste("cp ",ggfile," output/lesSessions",sep="")
@@ -137,11 +143,11 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
 
     ## transformation en SpatialPointDataFrame
                                         #   coordinates(coordAll) <- ~ LON + LAT
-    ## on déclare le système de coordonnées de référence: dégrés décimaux WGS84
+    ## on dÃ©clare le systÃ¨me de coordonnÃ©es de rÃ©fÃ©rence: dÃ©grÃ©s dÃ©cimaux WGS84
 
                                         #   proj4string(coordAll) <- CRS("+init=epsg:2154") # lambert 93
 
-    ## conversion en Lamber étendu
+    ## conversion en Lamber Ã©tendu
                                         #  coordAllWGS84 <- spTransform(coordAll,CRS("+proj=longlat +ellps=WGS84")) #transformation en WGS84
                                         #  coordAll2 <- data.frame(NEW.ID_PROG = coordAllWGS84@data,as.data.frame(coordAllWGS84@coords))
                                         #  colnames(coordAll2)[1] <- "NEW.ID_PROG"
@@ -188,7 +194,7 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
                          legend.position=NULL)
 
 
-        if(add_title) title_txt <- paste0("Localisation de la station ",ss,"\n et des ",nbs," stations de référence de type ",h, "\n suivies entre ",fy," et ",ly) else title_txt <- ""
+        if(add_title) title_txt <- paste0("Localisation de la station ",ss,"\n et des ",nbs," stations de rÃ©fÃ©rence de type ",h, "\n suivies entre ",fy," et ",ly) else title_txt <- ""
         gg <- ggplot()
         gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)+ geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
         gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
@@ -196,7 +202,7 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
         gg <- gg + geom_point(data = dcoord.s,aes(LON,LAT), colour="red",size=4)
         gg <- gg + geom_point(data = coordAllh, aes(LON,LAT,colour=DUREE),size=2,shape=19)
         gg <- gg + labs(x="",y="",title=title_txt)
-        gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'années\nde suivi",limits=c(min_duree,max_duree))
+        gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'annÃ©es\nde suivi",limits=c(min_duree,max_duree))
 
         if(add_local) {
 
@@ -342,7 +348,7 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
         gg <- gg + geom_linerange(aes(ymin=ABUND025,ymax=ABUND975),colour="#08306b",alpha=.5)
         gg <- gg + geom_crossbar(aes(ymin = ABUND25, ymax = ABUND75), width = 0.5,alpha=.5,colour="#08306b",fill="#08306b")
         ## gg <- gg + theme(axis.text.x  = element_text(angle=90,vjust=.5))
-        gg <- gg + labs(x="",y="Nombre d'individus adultes capturés par an",title=title_txt,colour="")
+        gg <- gg + labs(x="",y="Nombre d'individus adultes capturÃ©s par an",title=title_txt,colour="")
         gg <- gg + geom_jitter(data=ggNbCapt,aes(x=sp_fig,y=ABUND,colour=YEAR),size=2.2,alpha=.8,width = .1)
         gg <- gg + scale_y_log10(breaks=c(0,1,2,5,10,20,50,100,200,400)) + coord_flip()
         gg <- gg + scale_colour_continuous(low="#ffa200",high="#960000",breaks=colour_break)#"#07307b","#0c5ef6","#c10909","#ea5d18"
@@ -463,7 +469,7 @@ abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limit
             gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
             gg <- gg + theme(legend.position="none")
             gg <- gg + labs(title=title_txt,
-                            x="Année",y="Nombre d'individus adultes capturés",
+                            x="AnnÃ©e",y="Nombre d'individus adultes capturÃ©s",
                             colour="")
 
             if(print.fig) print(gg)
@@ -542,7 +548,7 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
         aggTable.s <- rbind(aggTable.s,ggSite)
         aggTable.s$HABITAT <- as.character(aggTable.s$HABITAT)
 
-        if(add_title) title_txt <- paste("Captures toutes espèces\npour la station ",ss,sep="") else title_txt <- ""
+        if(add_title) title_txt <- paste("Captures toutes espÃ¨ces\npour la station ",ss,sep="") else title_txt <- ""
 
      #   browser()
         gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
@@ -558,7 +564,7 @@ abundanceYear.site <- function(d,site=NULL,fileLog="log.txt",print.fig=TRUE,save
         ##gg <- gg + scale_fill_manual(breaks=c(habitat,paste("Station:",ss)),values =c("#db6363","#08306b"),guide=FALSE)
         gg <- gg + theme(legend.position="none")
         gg <- gg + labs(title=title_txt,
-                        x="Année",y="Nombre d'individus adultes capturés",
+                        x="AnnÃ©e",y="Nombre d'individus adultes capturÃ©s",
                         colour="")
 
         if(print.fig) print(gg)
@@ -636,7 +642,7 @@ productivityYear.site <- function(d,site=NULL,limitTime=TRUE,fileLog="log.txt",p
         gg <- gg + scale_colour_manual(values =setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))))
         gg <- gg + scale_fill_manual(values= setNames(c("#07307b","#d71818"),c(habitat,paste("Station:",ss))),guide=FALSE)
         gg <- gg + labs(title=title_txt,
-                        x="Année",y="Productivité: Njuv/Nad")
+                        x="AnnÃ©e",y="ProductivitÃ©: Njuv/Nad")
         gg <- gg + theme(legend.position="none")
 
         if(print.fig) print(gg)
@@ -753,7 +759,7 @@ productivityYearSpecies.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,fi
 
                   gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
                 gg <- gg + labs(title=title_txt,
-                                x="Année",y="Productivité: Njuv/Nad")
+                                x="AnnÃ©e",y="ProductivitÃ©: Njuv/Nad")
                 gg <- gg + theme(legend.position="none")
 
                 if(print.fig) print(gg)
@@ -826,7 +832,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                     maxYear <- min(max(aggTable_s$YEAR)+1,max(aggTable$YEAR))
 
 
-                    if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
+                    if(add_title) title_txt <- paste("Station ",s,": toutes espÃ¨ces confondues",sep="") else title_txt <- ""
 
                     gg <- ggplot(data=aggTableTot,aes(x=YEAR,y=med,colour=gr,fill=gr)) + facet_grid(AGE_first~.,scales="free_y")
                     gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
@@ -834,7 +840,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
                     gg <- gg + geom_line(aes(y=CIquart_inf),alpha=.5,size=.8)+geom_line(aes(y=CIquart_sup),alpha=.5,size=.8)
                     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),name="")
                     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6","#c10909","#ea5d18"),guide=FALSE)
-                    gg <- gg + labs(title=title_txt,x="Année",y="Condition corporelle: (MA-MA_mean_sp)/MA_mean_sp")
+                    gg <- gg + labs(title=title_txt,x="AnnÃ©e",y="Condition corporelle: (MA-MA_mean_sp)/MA_mean_sp")
                     gg <- gg + coord_cartesian(xlim=c(minYear,maxYear)) + scale_x_continuous(breaks=pretty_breaks())
                     gg <- gg + theme(legend.position="none")
 
@@ -893,7 +899,7 @@ bodyCondition.site <- function(d,site=NULL,community_level=TRUE,species_level=TR
 
               if(print.fig |save.fig) {
 
-                    plot_local_sp(aggTableTot.sp,species,nom_sp,print.fig,save.fig,add_title,facet,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear =min(aggTable.sp_s$YEAR)-1,maxYear = max(aggTable.sp_s$YEAR))
+                    plot_local_sp(aggTableTot.sp,species,nom_sp,print.fig,save.fig,add_title,facet,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart Ã  la taille moyenne + 1)",x_lab="AnnÃ©e",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear =min(aggTable.sp_s$YEAR)-1,maxYear = max(aggTable.sp_s$YEAR))
 
                 } # END if(print.fig |save.fig)
         } else {  # END if(nrow(tS.seuil)>0)
@@ -1044,7 +1050,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                 d.ret.s <- subset(d.ret.s,BAGUE>10)
 
                 if(nrow(d.ret.s)>0) {
-                    if(add_title) title_txt <- paste("Station ",s,": toutes espèces confondues",sep="") else title_txt <- ""
+                    if(add_title) title_txt <- paste("Station ",s,": toutes espÃ¨ces confondues",sep="") else title_txt <- ""
 
                     aggTableAll.tot$YEAR <- aggTableAll.tot$YEAR + 1
                     d.ret.s$YEAR <- d.ret.s$YEAR + 1
@@ -1058,7 +1064,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                     gg <- gg + geom_line(data=subset(d.ret.s, MIGRATION !=""), aes(y=RETURN),colour="#d71818",size=1.8,alpha=.5)
                     gg <- gg + geom_point(data=subset(d.ret.s, MIGRATION !=""), aes(y=RETURN),colour="#d71818",size=2)
                     gg <- gg + labs(title=title_txt,
-                                    x="Année",y="Taux de retour")
+                                    x="AnnÃ©e",y="Taux de retour")
                     gg <- gg + theme(legend.position="none")
 
                     if(print.fig) print(gg)
@@ -1140,7 +1146,7 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
                             gg <- gg + theme(legend.position="none")
 
                             gg <- gg + labs(title=title_txt,
-                                            x="Année",y="Taux de retour de t-1 à t")
+                                            x="AnnÃ©e",y="Taux de retour de t-1 Ã  t")
 
                             if(print.fig) print(gg)
 
@@ -1166,8 +1172,8 @@ returnRate.site <- function(d,site=NULL,community_level=TRUE,species_level=TRUE,
 
 plot_local_sp <- function(dgg,species=NULL,nom_sp=NULL,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,
                           facet_sp=TRUE,facet_group="AGE_first",
-                          y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",
-                          x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"),
+                          y_lab="Condition corporelle: Masse/(Ecart Ã  la taille moyenne + 1)",
+                          x_lab="AnnÃ©e",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"),
                           minYear = NULL, maxYear = NULL) {
 
 
@@ -1266,8 +1272,8 @@ pheno.all <- function(d,habitat=NULL,fileLog="log.txt") # !!!!!!  NON STABILISE 
     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
 
-    gg <- gg + labs(list(title=paste("Variation de la date de la premiere capture de JUV\ntoutes espèces confondue",sep=""),
-                         x="Année",y="Jour Julien"))
+    gg <- gg + labs(list(title=paste("Variation de la date de la premiere capture de JUV\ntoutes espÃ¨ces confondue",sep=""),
+                         x="AnnÃ©e",y="Jour Julien"))
 
 
 
@@ -1332,7 +1338,7 @@ pheno.all <- function(d,habitat=NULL,fileLog="log.txt") # !!!!!!  NON STABILISE 
 
 
     gg <- ggplot(tPente,aes(x=pente))+geom_histogram() +  facet_grid(MIGRATION~HABITAT) + geom_vline(xintercept = pente,colour="red",size=2,alpha=.5)
-    gg <- gg + labs(list(title=paste("Pente de correction de la date de première capture de jeune",sep=""),
+    gg <- gg + labs(list(title=paste("Pente de correction de la date de premiÃ¨re capture de jeune",sep=""),
                          y="",x="Pente de la proportion de jeunes au court de la saison de baguage (par site et annee)"))
     ggfile <- paste("output/France/PenteDeCorrection_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1360,8 +1366,8 @@ pheno.all <- function(d,habitat=NULL,fileLog="log.txt") # !!!!!!  NON STABILISE 
     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
 
-    gg <- gg + labs(list(title=paste("Variation de la date corrigé de la premiere capture de JUV\ntoutes espèces confondue",sep=""),
-                         x="Année",y="Jour Julien"))
+    gg <- gg + labs(list(title=paste("Variation de la date corrigÃ© de la premiere capture de JUV\ntoutes espÃ¨ces confondue",sep=""),
+                         x="AnnÃ©e",y="Jour Julien"))
 
     gg
 
@@ -1393,8 +1399,8 @@ pheno.all <- function(d,habitat=NULL,fileLog="log.txt") # !!!!!!  NON STABILISE 
     gg <- gg + scale_colour_manual(values =c("#07307b","#0c5ef6"))
     gg <- gg + scale_fill_manual(values =c("#07307b","#0c5ef6"),guide=FALSE)
 
-    gg <- gg + labs(list(title=paste("Variation de la date de la premiere capture de JUV\ntoutes espèces confondue",sep=""),
-                         x="Année",y="Jour Julien"))
+    gg <- gg + labs(list(title=paste("Variation de la date de la premiere capture de JUV\ntoutes espÃ¨ces confondue",sep=""),
+                         x="AnnÃ©e",y="Jour Julien"))
 
     gg
 
