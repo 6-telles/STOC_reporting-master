@@ -216,7 +216,7 @@ expDataStation <- function(d,site=NULL) {
 
     w <- read.csv2("output/WARNING_DATA.csv")
 ##browser()
-    ## stocke le nom de toutes les colonnes du tableau dans la variable listChampExport
+    ## stocke le nom de certaines colonnes du tableau dans la variable listChampExport
     listChampExport <- c("cId_Data","NEW.ID_PROG","ID_PROG","DEPT","LOCALITE", "LIEUDIT","FIRST.YEAR","LAST.YEAR","NB.YEARS","THEME.SESSION","THEME","HABITAT","YEAR","NB.SESSION","FS.DEDUIT","FS.OUTPUT","NB.NF","DATE","MONTH","JULIANDAY","SESSION","BAGUEUR","FS","HS","DS","HEURE","H","NF","CENTRE","BAGUE","ACTION","SP","ESPECE","SEXE","AGE","AGE_first","LP","LP_borne","LP_mean","LP_indice_borne","MA","MA_borne","MA_mean","MA_indice_borne","LP_01", "LP_99","LP_seuilmin","LP_seuilmax","MA_01","MA_99","MA_seuilmin","MA_seuilmax","HABITAT_SP","MIGRATION")
 
     for(ss in site) {
