@@ -220,11 +220,11 @@ expDataStation <- function(d,site=NULL) {
     listChampExport <- c("cId_Data","NEW.ID_PROG","ID_PROG","DEPT","LOCALITE", "LIEUDIT","FIRST.YEAR","LAST.YEAR","NB.YEARS","THEME.SESSION","THEME","HABITAT","YEAR","NB.SESSION","FS.DEDUIT","FS.OUTPUT","NB.NF","DATE","MONTH","JULIANDAY","SESSION","BAGUEUR","FS","HS","DS","HEURE","H","NF","CENTRE","BAGUE","ACTION","SP","ESPECE","SEXE","AGE","AGE_first","LP","LP_borne","LP_mean","LP_indice_borne","MA","MA_borne","MA_mean","MA_indice_borne","LP_01", "LP_99","LP_seuilmin","LP_seuilmax","MA_01","MA_99","MA_seuilmin","MA_seuilmax","HABITAT_SP","MIGRATION")
 
     for(ss in site) {
-        ds <- subset(d,NEW.ID_PROG == ss,select=listChampExport)
-        ws <- subset(w,NEW.ID_PROG == ss)
+        ds <- subset(d,NEW.ID_PROG == ss,select=listChampExport)    ## stocke uniquement les informations de la station dont l'ID correspond à la boucle
+        ws <- subset(w,NEW.ID_PROG == ss)                           ## je n'ai pas réussi à comprendre la liste d'avant car pour moi cela sélectionne intégralement les données de la station
 
-        write.csv2(ds,paste("output/",ss,"/DATA_",ss,".csv",sep=""),row.names=FALSE,na="",quote=FALSE)
-        write.csv2(ws,paste("output/",ss,"/WARNING_",ss,".csv",sep=""),row.names=FALSE,na="",quote=FALSE)
+        write.csv2(ds,paste("output/",ss,"/DATA_",ss,".csv",sep=""),row.names=FALSE,na="",quote=FALSE)     ## crée un fichier output/n°station/DATA_n°station.csv avec juste les infos de cette station sous forme de tableau (je crois)
+        write.csv2(ws,paste("output/",ss,"/WARNING_",ss,".csv",sep=""),row.names=FALSE,na="",quote=FALSE)  ## crée un fichier output/n°station/WARNING_n°station.csv avec juste les infos de cette station sous forme de tableau (je crois)
 
     }
 }
@@ -232,12 +232,12 @@ expDataStation <- function(d,site=NULL) {
 
 
 
-
+## sauvegarde les données du tableau de données tableSpQuant dans un nouveau fichier
 save <- function() {
  if(save.data_france){
-        file <- paste0("data_France/quantileEspece_France_",habitatDemande,".csv")
-        catlog(c("  -> ",file,"\n"),fileLog)
-        write.csv2(tableSpQuant,file,row.names=FALSE)
+        file <- paste0("data_France/quantileEspece_France_",habitatDemande,".csv")   ## file permet de stocker le futur nom du fichier qui dépend de l'habitat demandé
+        catlog(c("  -> ",file,"\n"),fileLog)                                   
+        write.csv2(tableSpQuant,file,row.names=FALSE)                                ## crée un nouveau fichier avec tableSpQuant dont le nom correspondra à la variable file
  }
 
 }
