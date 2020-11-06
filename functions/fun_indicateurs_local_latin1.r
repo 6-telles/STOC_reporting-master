@@ -145,7 +145,7 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
     ## Si on veut enregistrer la figure, regarde si présence de dossier de la station dans output(à vérifier)???????????????????
     if(save.fig) checkRepertories(site)
 
-    ## Création d'un tableau avec seulement les coordonnées et nom des stations
+    ## Création d'un tableau avec seulement les coordonnées et nom des stations?????????????????????????????????????????????????????
     coordAll <- aggregate(cbind(d$LON,d$LAT) ~ d$NEW.ID_PROG,data=d,mean)
     colnames(coordAll)[2:3] <- c("LON","LAT")
     ##Mise dans ID_exclu de Toutes les lignes dont la latitude est inférieure à 40 en format caractères
@@ -301,7 +301,7 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
         habitat <- ds$HABITAT[1]
         ## Isolement des lignes du tableau possédant le même habitat que celui de la station sélectionnée
         ggTableHab <- subset(ggTableH,HABITAT==habitat)
-        ## Création d'une liste de nom des espèces (code à 6 lettres)
+        ## Création d'une liste de nom des espèces (code à 6 lettres) collectées dans le même habitat que la station sélectionnée
         listSP.s <- ggTableHab$SP
 
         ## Isolement des lignes contenant des espèces retrouvées dans la station
@@ -323,65 +323,77 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
         ## Création d'un tableau avec les espèces et le nombre de sites et fusion de ce tableau avec celui créé précédemment 
         nbsite <- ggTableHab[,c("SP","nb_site")]
         ggNbCapt <- merge(ggNbCapt,nbsite,by="SP")
-## Création d'un tableau concaténant 
+## Création d'un tableau en effectuant la somme des abondances de chaque espèce et transformation du format de la colonne espèce en caractères
         ggTableS <- aggregate(ggNbCapt$ABUND,by=list(ggNbCapt$SP),sum)
         colnames(ggTableS) <- c("SP","ABUNDsite_sum_ad")
         ggTableS$SP <- as.character(ggTableS$SP)
 
-
+## Création d'un tableau avec médiane des abondances de chaque espèce et transformation du format de la colonne espèce en caractères
         ggTableM <- aggregate(ggNbCapt$ABUND,by=list(ggNbCapt$SP),median)
         colnames(ggTableM) <- c("SP","ABUNDsite_med_ad")
         ggTableM$SP <- as.character(ggTableM$SP)
+        ## Fusion des deux tableaux créés précedemment par la colonne espèce
         ggTableS <- merge(ggTableS,ggTableM,by="SP")
 
 
 
 
 
-
+## Isolation des lignes contenant les espèces collectées sur la station et conversion de la colone espèce en caractères
         ds2 <- subset(d,NEW.ID_PROG==ss & SP %in% listSP.s)
         ds2$SP <- as.character(ds2$SP)
 
+        ## Isolation des colonnes espèce bague et année du tableau ds2 et suppression des répétitions
         du2.bague <- unique(subset(ds2,select=c("SP","BAGUE","YEAR")))
+        ## Création d'un tableau avec les colonnes SP et YEAR du tableau précédent et conversion en caractère des espèces et numérique des années
         ggNbCapt2 <- data.frame(table(du2.bague$SP,du2.bague$YEAR),stringsAsFactors=FALSE)
         colnames(ggNbCapt2) <- c("SP","YEAR","ABUND")
                                         #  ggNbCapt <- subset(ggNbCapt,ABUND>0)
         ggNbCapt2$SP <- as.character(ggNbCapt2$SP)
         ggNbCapt2$YEAR <- as.numeric(as.character(ggNbCapt2$YEAR))
 
+        ## Création d'un tableau avec la somme des abondances de chaque espèce et transformation du format de la colonne espèce en caractères
         ggTableS2 <- aggregate(ggNbCapt2$ABUND,by=list(ggNbCapt2$SP),sum)
         colnames(ggTableS2) <- c("SP","ABUNDsite_sum_all")
         ggTableS2$SP <- as.character(ggTableS2$SP)
 
-
+## Création d'un tableau avec la médiane des abondances de chaque espèce et transformation du format de la colonne espèce en caractères
         ggTableM2 <- aggregate(ggNbCapt2$ABUND,by=list(ggNbCapt2$SP),median)
         colnames(ggTableM2) <- c("SP","ABUNDsite_med_all")
         ggTableM2$SP <- as.character(ggTableM2$SP)
+        ## Fusion des deux tableaux créés précedemment par la colonne espèce
         ggTableS2 <- merge(ggTableS2,ggTableM2,by="SP")
 
+        ## Fusion des deux tableaux (somme des abondances des espèces du même habitat que la station et somme des abondances des espèces de la station) par la colonne espèce
         ggTableS <- merge(ggTableS,ggTableS2,by="SP")
-
+## Fusion des deux tableaux (somme des abondances des espèces du même habitat que la station et de la station et des abondances des espèces des stations possédant le même habitat) par la colonne espèce
         ggTable <- merge(ggTableS,ggTableHab,by="SP")
 
-
+## Si les noms des espèces sont précisés 
         if(!is.null(col_nomsp)) {
+            ## Fusion du tableau créé précedemment avec le nom des espèces
             ggTable <- merge(ggTable,tabsp,by="SP")
             ggTable$sp_fig <- ggTable[,col_nomsp]
+            ## Fusion du tableau contenant les colonnes bague et année des stations possédant le même habitat avec le nom des espèces
             ggNbCapt <- merge(ggNbCapt,tabsp,by="SP")
             ggNbCapt$sp_fig <- ggNbCapt[,col_nomsp]
 
         } else {
+            ## Sinon, nom des espèces= code des espèces
             ggTable$sp_fig <- ggTable$SP
             ggNbCapt$sp_fig <- ggNbCapt$SP
         }
-
+## concaténation du nom de l'espèce avec le nombre de sites sur lesquels elle a été collectée en format caractère
         ggTable$sp_fig <- paste0(ggTable$sp_fig," (",ggTable$nb_site,")")
+## concaténation du nom de l'espèce avec le nombre de sites sur lesquels elle a été collectée en format caractère
         ggNbCapt$sp_fig <- paste0(ggNbCapt$sp_fig," (",ggNbCapt$nb_site,")")
 
-
+## Si on veut ajouter un titre, ajout de "Site (num station)"
         if(add_title) title_txt <- paste("Site ",ss) else title_txt <- ""
+            ## Séparation des années en 5 classes dans l'ordre croissant
         colour_break <- sort(unique(round(seq(min(ggNbCapt$YEAR),max(ggNbCapt$YEAR),length.out=5))))
-
+        
+## Création de la figure 4
         gg <- ggplot(ggTable,aes(x=reorder(sp_fig, (ABUNDsite_sum_ad)),y=ABUND50))
         gg <- gg + geom_linerange(aes(ymin=ABUND025,ymax=ABUND975),colour="#08306b",alpha=.5)
         gg <- gg + geom_crossbar(aes(ymin = ABUND25, ymax = ABUND75), width = 0.5,alpha=.5,colour="#08306b",fill="#08306b")
@@ -390,9 +402,9 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
         gg <- gg + geom_jitter(data=ggNbCapt,aes(x=sp_fig,y=ABUND,colour=YEAR),size=2.2,alpha=.8,width = .1)
         gg <- gg + scale_y_log10(breaks=c(0,1,2,5,10,20,50,100,200,400)) + coord_flip()
         gg <- gg + scale_colour_continuous(low="#ffa200",high="#960000",breaks=colour_break)#"#07307b","#0c5ef6","#c10909","#ea5d18"
-
+## Affichage de la figure 4 si true
         if(print.fig) print(gg)
-
+## Sauvegarde de la figure 4 si true dans output et ffichage de l'opération dans le log
         if(save.fig) {
             ggfile <- paste("output/",ss,"/nbCapture_site_",ss,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
@@ -401,6 +413,7 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
             catlog(c("\n"),fileLog)
         }
     } # END  for(ss in site)
+    ## Retourne table 3
     if(return_table){
         ggNbCapt <- dcast(ggNbCapt[,c("SP","YEAR","ABUND")],SP~YEAR)
         ggTable <- merge(ggTable,ggNbCapt,by="SP")
