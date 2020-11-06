@@ -16,6 +16,9 @@ source("functions/fun_generic_latin1.r")
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
+
+
+## Fonction création de la figure 2 du rapport
 selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,aggAllSession=NULL,aggSession=NULL,aggSessionRef=NULL,add_title=TRUE) {
 
 
@@ -105,7 +108,7 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fi
 }
 
 
-
+###################################################################################################################################################################
 
 
 
@@ -119,26 +122,35 @@ selectedSession.site <- function(site=NULL,d,fileLog=NULL,print.fig=TRUE,save.fi
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
+                                      
+                                      ## Création de la figure 1 du rapport
 carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE,save.fig=FALSE,add_title=TRUE) {
-
+## Chargement de tous les packages nécessaires à la foncion carteStation
     require(rgdal)
     require(ggmap)
     require(maptools)
     library(sf)
     require(maps)
+    
+    ## Si on veut ajouter la localisation de la station, chargement de packages
     if(add_local) { library(OpenStreetMap)
 
         library(gridExtra)
 
     }
-
-    france <- map_data("france")
+    ## Création carte de France
+    france <- map_data("france") 
+    ## Si pas de station précisée, tri des stations dans l'ordre croissant
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
+    ## Si on veut enregistrer la figure, regarde si présence de dossier de la station dans output(à vérifier)???????????????????
     if(save.fig) checkRepertories(site)
 
+    ## Création d'un tableau avec seulement les coordonnées et nom des stations
     coordAll <- aggregate(cbind(d$LON,d$LAT) ~ d$NEW.ID_PROG,data=d,mean)
     colnames(coordAll)[2:3] <- c("LON","LAT")
+    ##Mise dans ID_exclu de Toutes les lignes dont la latitude est inférieure à 40 en format caractères
     ID_exclu <- as.character(coordAll$NEW.ID_PROG[which(coordAll$LAT<40)])
+    ## Exclusion des lignes pour lesquelles la latitude est inférieure à 40 dans le tableau coordAll
     coordAll <- subset(coordAll,LAT>40)
 
     ## transformation en SpatialPointDataFrame
@@ -153,38 +165,50 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
                                         #  colnames(coordAll2)[1] <- "NEW.ID_PROG"
                                         #  ID_exclu <- as.character(coordAll2$NEW.ID_PROG[which(coordAll2$LAT<40)])
                                         #  coordAll2 <- subset(coordAll2,LAT>40)
-
+    
+    
+## Création d'un tableau avec l'année de début et la dernière année de collecte de chaque station
     anneeAll <- unique(subset(d,select=c("NEW.ID_PROG","FIRST.YEAR","LAST.YEAR")))
+## Création d'un tableau regroupant chaque station avec son type d'habitant
     typeAll <-  unique(subset(d,select=c("NEW.ID_PROG","HABITAT")))
 
                                         #  coordAll2 <- merge(coordAll2,typeAll,by="NEW.ID_PROG",all=TRUE)
                                         #  coordAll2 <- merge(coordAll2,anneeAll,by="NEW.ID_PROG",all=TRUE)
     colnames(coordAll)[1] <- "NEW.ID_PROG"
+    ## Création d'un tableau coordAll2 regroupant les trois tableaux créés précedemment
     coordAll2 <- merge(coordAll,typeAll,by="NEW.ID_PROG",all=TRUE)
     coordAll2 <- merge(coordAll2,anneeAll,by="NEW.ID_PROG",all=TRUE)
 
-
+## Pour chaque station
     for(ss in site)
     {
+        ## Conversion des habitats en caractères (terrestre)
         h <- as.character(coordAll2$HABITAT[coordAll2$NEW.ID_PROG==ss])
+        ## Prise de l'année maximale de début de collecte de données entre la station et les données globales
         fy <- max(coordAll2$FIRST.YEAR[coordAll2$NEW.ID_PROG==ss] - 1,min(d$YEAR))
+        ## Prise de l'année minimale de la dernière année de collecte de données entre la station et les données globales
         ly <- min(coordAll2$LAST.YEAR[coordAll2$NEW.ID_PROG==ss] + 1,max(d$YEAR))
 
-
+## Création d'un nouveau tableau en prenant les lignes possédant même habitat que celui de la station, de première année de capture inférieure à celle de la station et de dernière année de capture supérieure à celle-ci
         coordAllh <- subset(coordAll2,HABITAT == h & FIRST.YEAR <= ly & LAST.YEAR >= fy)
+        ## Déduction du nombre de stations dans le nouveau tableau
         nbs <- length(unique(coordAllh$NEW.ID_PROG))-1
+        ## Récupération des données de la station dans le tableau coordAll2
         dcoord.s <- subset(coordAll2,NEW.ID_PROG == ss)
 
+        ## Création d'une colonne de durée de fonctionnement des stations dans le tableau coordAllh
         coordAllh$DUREE <- apply(subset(coordAllh,select=c("FIRST.YEAR","LAST.YEAR")),1,FUN = function(X) (min(X[2],ly) - max(X[1],fy) + 1))
-
+                                 
+## Détermination de la plus grande durée de fonctionnement d'une station en années                      
         max_duree <- max(coordAllh$DUREE)
         min_duree <- 1
         inter_duree <- 3
-
+                                 
+## Création d'une carte du monde et d'une carte de France
         world1 <- sf::st_as_sf(map('world', plot = FALSE, fill = TRUE))
         france <- sf::st_as_sf(map('france', plot = FALSE, fill = TRUE))
 
-
+## Définition d'un thème d'affichage des cartes
         mytheme <- theme(plot.title = element_text(face = "bold",size = rel(1.2), hjust = 0.5),
                          panel.background = element_rect(colour = NA),
                          plot.background = element_rect(colour = NA),
@@ -193,8 +217,9 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
                          axis.title.x = element_text(vjust = -0.2),
                          legend.position=NULL)
 
-
+## Si on veut ajouter un titre, la figure s'appellera "localisation de la station (nombre) et des (nombre de stations) stations de référence de type (habitat= terrestre), suivies entre (année de création de la première station) et (dernière année de collecte de données des stations)
         if(add_title) title_txt <- paste0("Localisation de la station ",ss,"\n et des ",nbs," stations de référence de type ",h, "\n suivies entre ",fy," et ",ly) else title_txt <- ""
+            ## Création de la figure 1 du rapport
         gg <- ggplot()
         gg <- gg + geom_sf(data = world1,fill="white", colour="#7f7f7f", size=0.2)+ geom_sf(data = france,fill="white", colour="#7f7f7f", size=0.5)
         gg <- gg + coord_sf(xlim=c(-5,9),ylim=c(41.5,52))
@@ -203,7 +228,8 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
         gg <- gg + geom_point(data = coordAllh, aes(LON,LAT,colour=DUREE),size=2,shape=19)
         gg <- gg + labs(x="",y="",title=title_txt)
         gg <- gg + scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="Nombre\nd'années\nde suivi",limits=c(min_duree,max_duree))
-
+                                 
+## Si on veut ajouter les coordonnées de la station, correction des coordonnées de la station
         if(add_local) {
 
             degloc <- 0.25
@@ -212,10 +238,10 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
             lon_min <- min(dcoord.s$LON,na.rm=TRUE) - degloc
             lon_max <- max(dcoord.s$LON,na.rm=TRUE) + degloc
 
-
+## Création de tableaux dans lesquels sont isolées les lignes contenant les coordonnées de la station des tableaux coordAll2 et coordALLh
             coordAll2.loc <- subset(coordAll2,LAT > lat_min & LAT < lat_max & LON > lon_min & LON < lon_max)
             coordAllh.loc <- subset(coordAllh,LAT > lat_min & LAT < lat_max & LON > lon_min & LON < lon_max)
-
+## Création de la carte
             map <- openmap(c(lat_max,lon_min), c(lat_min,lon_max), zoom = NULL,type = c("osm", "stamen-toner", "stamen-terrain","stamen-watercolor", "esri","esri-topo")[1], mergeTiles = TRUE)
             map.latlon <- openproj(map, projection = "+proj=longlat +ellps=WGS84 +datum=WGS84 +no_defs")
             ggloc <- autoplot(map.latlon)  + labs(x = "", y="")
@@ -226,7 +252,7 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
             ggloc <- ggloc +   scale_colour_gradient2(low = "#b2182b",mid="#92c5de",high = "#053061",midpoint = 3,name="",limits=c(min_duree,max_duree),guide =FALSE)
 
         }
-
+## Si on veut sauvegarder la figure, sauvegarde dans output et message dans le log
         if(save.fig) {
             if(add_local) g <- arrangeGrob(gg,ggloc,ncol = 1, nrow = 2,heights=c(4,3)) else g <- gg
             ggfile <- paste("output/",ss,"/carte_",ss,".png",sep="")
@@ -234,58 +260,70 @@ carteStation <- function(site=NULL,d,add_local=FALSE,fileLog=NULL,print.fig=TRUE
             ggsave(ggfile,g)#,height = 10.5,width = 13)
             catlog(c("\n"),fileLog)
         }
-
+## Si on veut afficher la figure, affichage de la figure et arrangements pour add_local
         if(print.fig)
             if(add_local)  grid.arrange(gg,ggloc,ncol = 1, nrow = 2,heights=c(4,3)) else print(gg)
     }
 }
 
+###################################################################################################################
 
 
-
-
+## Création de la figure 4 du rapport
 speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_station=0,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=TRUE,return_table=FALSE) {
 
     require(ggplot2)
+    ## Chargement du tableau dsp (données sur les différentes espèces de passereaux)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
-
+## Si pas de station précisée, tri des stations dans l'ordre croissant sans répétition, ainsi que des habitats sans répétition
     if(is.null(site)) {
         site <- sort(unique(d$NEW.ID_PROG))
         habitats <- unique(d$HABITAT)
     } else {
+        ## Sinon, isolement de l'habitat de la station concernée
         habitats <- unique(subset(d,NEW.ID_PROG %in% site)$HABITAT)
     }
-
+## Importation du tableau ggTableH (données récoltées) 
     ggTableH <- read.csv2("data_France/quantileEspece_France_.csv",stringsAsFactors=FALSE)
-
+## Conversion des habitats et espèces de ggtable en format caractère
     ggTableH$HABITAT <- as.character(ggTableH$HABITAT)
     ggTableH$SP <- as.character(ggTableH$SP)
-
+## Sélection de la colonne proportion de stations dans lesquelles l'espèce a été observée, seulement si cette proportion dépace un certain seuil
     ggTableH <- subset(ggTableH,PROP_STATION_CAPTURE>seuil_prop_station)
-
+## Si présence du nom des espèces, on supprime les répétitions
     if(!is.null(col_nomsp)) tabsp <- unique(d[,c("SP",col_nomsp)])
-
+## Pour chaque station
     for(ss in site) {
                                         #  print(ss)
-
+## Isolement des espèces adultes capturées dans la station
         ds <- subset(d,AGE_first == "AD"& NEW.ID_PROG==ss)
+        ## On récupère l'habitat de la station
         habitat <- ds$HABITAT[1]
+        ## Isolement des lignes du tableau possédant le même habitat que celui de la station sélectionnée
         ggTableHab <- subset(ggTableH,HABITAT==habitat)
+        ## Création d'une liste de nom des espèces (code à 6 lettres)
         listSP.s <- ggTableHab$SP
 
+        ## Isolement des lignes contenant des espèces retrouvées dans la station
         ds <- subset(ds,SP %in% listSP.s)
         ds$SP <- as.character(ds$SP)
 
+        ## Isolement de 3 colonnes en supprimant les répétitions: espèce, bague et année
         du.bague <- unique(subset(ds,select=c("SP","BAGUE","YEAR")))
+        ## Création d'un tableau contenant les colonnes bague et année du tableau précedent
         ggNbCapt <- data.frame(table(du.bague$SP,du.bague$YEAR),stringsAsFactors=FALSE)
         colnames(ggNbCapt) <- c("SP","YEAR","ABUND")
                                         #  ggNbCapt <- subset(ggNbCapt,ABUND>0)
+        
+        ## Mise en format caractère du nom des espèces et en numérique l'année de capture
         ggNbCapt$SP <- as.character(ggNbCapt$SP)
         ggNbCapt$YEAR <- as.numeric(as.character(ggNbCapt$YEAR))
 
+        
+        ## Création d'un tableau avec les espèces et le nombre de sites et fusion de ce tableau avec celui créé précédemment 
         nbsite <- ggTableHab[,c("SP","nb_site")]
         ggNbCapt <- merge(ggNbCapt,nbsite,by="SP")
-
+## Création d'un tableau concaténant 
         ggTableS <- aggregate(ggNbCapt$ABUND,by=list(ggNbCapt$SP),sum)
         colnames(ggTableS) <- c("SP","ABUNDsite_sum_ad")
         ggTableS$SP <- as.character(ggTableS$SP)
