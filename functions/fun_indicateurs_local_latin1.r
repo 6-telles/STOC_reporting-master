@@ -404,7 +404,7 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
         gg <- gg + scale_colour_continuous(low="#ffa200",high="#960000",breaks=colour_break)#"#07307b","#0c5ef6","#c10909","#ea5d18"
 ## Affichage de la figure 4 si true
         if(print.fig) print(gg)
-## Sauvegarde de la figure 4 si true dans output et ffichage de l'opération dans le log
+## Sauvegarde de la figure 4 si true dans output et affichage de l'opération dans le log
         if(save.fig) {
             ggfile <- paste("output/",ss,"/nbCapture_site_",ss,".png",sep="")
             catlog(c("Check",ggfile,":"),fileLog)
@@ -425,6 +425,9 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
 
 
 
+                                 
+#########################################################################################################               
+                                 
 
 ##' Graphe de variation d'abondance annuelle par espece et par site
 ##'
@@ -437,35 +440,48 @@ speciesRelativeAbund.site <- function(d,site=NULL,col_nomsp=NULL,seuil_prop_stat
 ##' @return NULL
 ##' @author Romain Lorrilliere
 
+                                 
+                                 ## Création graphe 5 du rapport
 abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limitTime=TRUE,fileLog="log.txt",print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet_title=TRUE)
 {
                                         # site="9"
 
     require(ggplot2)
-
+## Chargement des données (espèces, année, abondance (médiane généralement comprise entre 0 et 3))
     aggTableNat <- read.csv2("data_France/N_adulte_sp_France.csv")
-
+    
+## Si le site n'est pas précisé, tri dans l'orde croissant en format caractère
     if(is.null(site)) site <- sort(as.character(unique(d$NEW.ID_PROG)))
 
     ## boucle pour figure par site
     for(ss in site) {
 
-        ## selection des adultes
+        ## selection des adultes de la station
         dhAd <- subset(d,NEW.ID_PROG == ss & AGE_first == "AD")
+        ## Récupération de l'habitat de la station et des années de fonctionnement de celle-ci
         hab <- as.character(dhAd$HABITAT[1])
         lesAnnees <- as.numeric(as.character(unique(dhAd$YEAR)))
+        
+        ## Si l'espèce n'est pas précisée, tri des escpèces dans l'ordre alphabétique (format caractère), sinon prend les espèces précisées
         if(is.null(species)) listSP.s <- sort(as.character(unique(dhAd$ESPECE))) else listSP.s <- species
 
 
-
+## Pour toutes les espèces choisies:
         for(sp in listSP.s) {
 
+            ## Récupération des adultes de l'espèce
             dhAdSp <- subset(dhAd,ESPECE==sp)
+            ## Création d'un nouveau tableau en isolant les colonnes bague, espèce, station et année du tableau précédent
             du.bague <- unique(subset(dhAdSp,select=c("BAGUE","ESPECE","NEW.ID_PROG","YEAR")))
+            ## Création d'un tableau avec le nom de la station et son habitat
             du.hab <- unique(subset(dhAdSp,select=c("NEW.ID_PROG","HABITAT")))
 
+            
+            ## ??????????????????????????????????????????????????????
             t.abund <- tapply(du.bague$BAGUE,list(du.bague$YEAR),length)
+            ## Si un élément de la liste est vide, elle prend la valeur 0
             t.abund <- ifelse(is.na(t.abund),0,t.abund)
+            ## Conversion en tableau (colonnes = année, abondance)
             t.abund <- data.frame(t.abund)
                                         #   t.abund <- reshape(t.abund, direction = "long",
                                         #                      idvar = "",
@@ -473,21 +489,28 @@ abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limit
                                         #                      varying = 1:ncol(t.abund),sep="")
                                         #            colnames(t.abund) <- c("YEAR","ABUND")
 
+            
+            ## Si le nombre de lignes est différent du nombre d'années de fonctionnement de la station
             if(nrow(t.abund) != length(lesAnnees)) {
+                ## Combine la colonne abondance du tableau t.abund et la colonne année de LesAnnees
                 t.site <- rbind(data.frame(YEAR=as.numeric(rownames(t.abund)),ABUND=t.abund[,1]),data.frame(YEAR=lesAnnees[!(lesAnnees%in%as.numeric(rownames(t.abund)))],ABUND=0))
+                ## Tri des lignes en fonction des années
                 t.site <- t.site[order(t.site$YEAR),]
+                
+                ## Création d'un tableau avec les colonnes abondances et années de t.abund en triant les lignes en fonction des années
             } else {
                 t.site <- data.frame(YEAR=as.numeric(rownames(t.abund)),ABUND=t.abund[,1])
                 t.site <- t.site[order(t.site$YEAR),]
             }
-
+## Création d'un tableau isolant les colonnes station, année, session et FS du tableau des adultes de l'espèce, en supprimant les répétitions
             t.nbnf.session <- unique(subset(dhAd,select=c("NEW.ID_PROG","YEAR","SESSION","FS")))
+            ## création d'un tableau en effectuant la somme de ????????????????????????????????????
             t.fs <- data.frame(aggregate(FS~YEAR, data=t.nbnf.session, sum, na.rm=FALSE))
             t.fs <- subset(t.fs,!is.na(FS))
 
-
+## Fusion des tableaux t.site et t.fs par la colonne année
             t.site <- merge(t.site,t.fs,by=c("YEAR"))
-
+## Création de la colonne ajustement de l'abondance 
             t.site$ABUND.ADJUST <- t.site$ABUND / t.site$FS*(120*3)
 
 
@@ -495,11 +518,15 @@ abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limit
             minYear <- max(min(t.site$YEAR)-1,min(aggTableNat$YEAR))
             maxYear <- min(max(t.site$YEAR)+1,max(aggTableNat$YEAR))
 
+            ## Isolement des lignes possédant le même habitat, la même espèce et années comprises dans la durée de fonctionnement de la station du tableau espèces, année, abondance des adultes 
             aggTable.s <- subset(aggTableNat,HABITAT == hab & ESPECE == sp & YEAR >= minYear & YEAR <= maxYear)
+            ## Création d'un tableau regroupant les années de fonctionnement de la station avec abondance médiane etc de l'espèce (ligne rouge du graphique)
             ggSite <- data.frame(YEAR = t.site$YEAR,HABITAT = paste("Station:",ss),CIinf=NA,CIquart_inf=NA,med=t.site$ABUND.ADJUST,CIquart_sup=NA,CIsup=NA,ESPECE=sp)
-
+            
+## combinaison des 2 tableaux précédents
             aggTable.s <- rbind(aggTable.s,ggSite)
 
+            ## Si on veut ajouter un titre, le titre sera soit le nom des espèces étudiées, soit le nom de la station étudiée
             if(add_title) {
                 if(!is.null(nom_sp)) sp_fig <- nom_sp[sp == listSP.s] else sp_fig <- sp
                 title_txt <- paste(sp_fig,": Station ",ss,sep="")
@@ -507,6 +534,7 @@ abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limit
                 title_txt <- ""
             }
 
+            ## Création de la figure 5
             if(facet_title) if(!is.null(nom_sp)) aggTable.s$facet <- nom_sp[sp == listSP.s] else aggTable.s$facet <- sp
 
             gg <- ggplot(aggTable.s,aes(x=YEAR,y=med,colour=HABITAT,fill=HABITAT))
@@ -522,9 +550,10 @@ abundanceSpeciesYear.site <- function(d,site=NULL,species=NULL,nom_sp=NULL,limit
             gg <- gg + labs(title=title_txt,
                             x="Année",y="Nombre d'individus adultes capturés",
                             colour="")
-
+## Si on veut afficher la figure, affichage
             if(print.fig) print(gg)
-
+            
+## Si on veut sauvegarder la figure, sauvegarde dans output et message dans le log
             if(save.fig) {
 
                 ggfile <- paste("output/",ss,"/N_adulte_Site_",ss,"_",sp,".png",sep="")
