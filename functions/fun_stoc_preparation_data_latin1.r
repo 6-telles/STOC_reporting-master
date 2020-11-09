@@ -172,36 +172,36 @@ import <- function(file="extrait.txt",lastYear=NULL,
      de.warning <- data.frame(error = "ACTION",commmentError="NA",suppression= "ligne", subset(de,select = selectedColumns))    ## renseigne dans dans un tableau (de.warning) 
                                                                                                                        ## le type d'erreur qui concerne chaque ligne du tableau
 
-        lwiNA <- nrow(de.warning)
+        lwiNA <- nrow(de.warning)    ## stocke le nombre de lignes concernées par l'absence de données dans Action
 
         catlog(c("\n !!! WARNING MESSAGE:",lwiNA," lines excluded\n",
-            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'ACTION - NA'!!\n"),fileLog)
-        if (file.exists("output_preparation/WARNING_DATA.csv"))
-            write.table(de.warning,"output_preparation/WARNING_DATA.csv",
+            "Check WARNING_DATA.csv in output_preparation/ dirctory error category : 'ACTION - NA'!!\n"),fileLog)   ## affiche un message d'erreur indiquant le nb de lignes exclues
+        if (file.exists("output_preparation/WARNING_DATA.csv"))     ## si le fichier output_preparation/WARNING_DATA.csv existe
+            write.table(de.warning,"output_preparation/WARNING_DATA.csv",   ## on lui rajoute le tableau avec les erreurs commentées
                         row.names=FALSE,sep=";",quote=FALSE,append=TRUE,
                         col.names=FALSE) else
-                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",
+                                             write.table(de.warning,"output_preparation/WARNING_DATA.csv",   ## sinon, on le crée avec le tableau des erreurs commentées
                                                          row.names=FALSE,sep=";",quote=FALSE,append=FALSE)
 
     }
     ## data conservees
-    d <-subset(d,!(is.na(ACTION)))
+    d <-subset(d,!(is.na(ACTION)))    ## on remplace le jeu de données par une version sans les lignes n'ayant pas d'action
 
                                         # code.action: vector of the possible code for the ACTION field with the good encoding
-    code.action <- c("B","C","R")
-    ua <- unique(d$ACTION)
-    while(length(ua[!(ua %in% code.action)])>0) {
-         catlog("\n Il y a des erreurs d'encodage, nous allons corriger ces erreurs",fileLog)
-        catlog("\n Veuillez renseigner a quel code font reference le(s) code(s) suivant:\n (Taper le code en majuscule puis [ENTRER])\n",fileLog)
-        for (ia in which(!(ua %in% code.action))) {
-            catlog(paste(ua[ia],":\n"),fileLog)
-            A <-readline(paste("Taper le code",ua[ia],"en majuscule puis [ENTRER]"))
-            d$ACTION[d$ACTION == ua[ia]] <- A
+    code.action <- c("B","C","R")    ## définit les données possibles de la colonne Action
+    ua <- unique(d$ACTION)           ## stocke dans ua uniquement la colonne Action
+    while(length(ua[!(ua %in% code.action)])>0) {   ## Tant que l'une des données n'est pas un B, un C ou un R, on entre dans la boucle
+         catlog("\n Il y a des erreurs d'encodage, nous allons corriger ces erreurs",fileLog)   ## texte informatif pour l'utilisateur 
+        catlog("\n Veuillez renseigner a quel code font reference le(s) code(s) suivant:\n (Taper le code en majuscule puis [ENTRER])\n",fileLog) ## texte informatif pour l'utilisateur 
+        for (ia in which(!(ua %in% code.action))) {  ## on boucle sur les lignes à données mal encodées
+            catlog(paste(ua[ia],":\n"),fileLog)      ## on inscrit le code gênant dans le log
+            A <-readline(paste("Taper le code",ua[ia],"en majuscule puis [ENTRER]"))   ## on demande le code à l'utilisateur et on le stocke dans A
+            d$ACTION[d$ACTION == ua[ia]] <- A    ## on remplace l'action des les lignes concernées par ce code défectueux par le code de l'utilisateur 
         }
 
-         ua <- unique(d$ACTION)
+         ua <- unique(d$ACTION)       ## on actualise la variable ua qui contient la colonne Action
     }
-    catlog(c(" --> OK, probleme d encodage corrige \n"),fileLog)
+    catlog(c(" --> OK, probleme d encodage corrige \n"),fileLog)   ## lorsque toutes les données de la colonne action sont égales à B, C ou R, on dit que l'erreur est corrigée
 
     warning.act <- subset(d,ACTION %nin% code.action)
     la <- nrow(warning.act)
