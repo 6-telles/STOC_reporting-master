@@ -138,9 +138,12 @@ import <- function(file="extrait.txt",lastYear=NULL,
     ## Création du tableau tCont.session, qui recense dans un tableau le nombre de jours de capture effectués par an par chaque station (1 station / 1 annnée / nb de jours effectués)
     tCont.session <- aggregate(DATE~ID_PROG + YEAR ,unique(subset(d,select=c(ID_PROG,DATE,YEAR))),length)   ## crée le tableau
     colnames(tCont.session)[3] <- "NB_DATE_IMPORT"                                                          ## renomme la colonne du nb de jours effectués "NB_DATE_IMPORT"  
-    ## Création de tCont en fusionnant tCont.bague et tCont.session, ce qui permet d'obtenir un tableau avec pour colonnes : l'ID de station par ordre croissant, chaque année de capture pour cette station, le nb de bagues posées cette année-là et le nb de jours de capture effectués
-    tCont <- merge(tCont.bague,tCont.session,by=c("ID_PROG","YEAR"))   ## fusionne les deux tableaux sans répéter les colonnes communes (donc les numéros de stations et les années de capture)
-    tCont <- tCont[order(tCont$ID_PROG,tCont$YEAR),]                   ## range par ordre croissant les stations et les années de capture, en privilégiant le numéro de station (donc d'abord toutes les années dans l'ordre croissant de la station 1, puis celles de la 2, etc)
+    ## Création de tCont en fusionnant tCont.bague et tCont.session, ce qui permet d'obtenir un tableau avec pour colonnes : 
+    ## l'ID de station par ordre croissant, chaque année de capture pour cette station, le nb de bagues posées cette année-là et le nb de jours de capture effectués
+    tCont <- merge(tCont.bague,tCont.session,by=c("ID_PROG","YEAR"))   ## fusionne les deux tableaux sans répéter les colonnes communes 
+                                                                       ## (donc les numéros de stations et les années de capture)
+    tCont <- tCont[order(tCont$ID_PROG,tCont$YEAR),]                   ## range par ordre croissant les stations et les années de capture, en privilégiant le numéro de station 
+                                                                       ## (donc d'abord toutes les années dans l'ordre croissant de la station 1, puis celles de la 2, etc)
 
 ### data subset
     selectedColumns <- c("ACTION","CENTRE","BAGUE","DATE","YEAR","MONTH","JULIANDAY","HEURE","H",
@@ -161,11 +164,13 @@ import <- function(file="extrait.txt",lastYear=NULL,
     catlog(c("\n====================================\n\n - Checking et correction: ACTION field character encoding\n------------------------------------\n"),fileLog)
 
 
-    ## Si certaines lignes n'ont pas de valeur pour la colonne ACTION, 
+    ## Si certaines lignes n'ont pas de valeur pour la colonne ACTION, il affiche le nombre de lignes supprimées, inscrit un message d'erreur dans le 
+    ## fichier output_preparati0on/WARNING_DATA.csv (qu'il crée si besoin) et supprime les lignes concernées du jeu de données
     ## de data sans ACTION
-    de <- subset(d,is.na(ACTION))        ##
-    if(nrow(de) > 0) {
-     de.warning <- data.frame(error = "ACTION",commmentError="NA",suppression= "ligne", subset(de,select = selectedColumns))
+    de <- subset(d,is.na(ACTION))        ## stocke dans de les lignes qui n'ont pas de valeur pour la colonne Action (NA)
+    if(nrow(de) > 0) {                   ## si de n'est pas vide
+     de.warning <- data.frame(error = "ACTION",commmentError="NA",suppression= "ligne", subset(de,select = selectedColumns))    ## renseigne dans dans un tableau (de.warning) 
+                                                                                                                       ## le type d'erreur qui concerne chaque ligne du tableau
 
         lwiNA <- nrow(de.warning)
 
