@@ -39,7 +39,8 @@ run.rmd <- function(file.rmd="functions/rmd_stoc_reporting_utf8.rmd",rep.out="ou
      format <- paste0(format_output,"_document")
 
     rep <- getwd()
-
+    
+ ## Cat convertit les arguments en chaine de caractère, les concatene et les renvoie
      cat("rmd :",file.rmd,"\n")
     cat("file.data :",file.data,"\n")
     cat("rep:", rep,"\n")
