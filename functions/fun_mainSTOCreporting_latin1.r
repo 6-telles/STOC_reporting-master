@@ -6,11 +6,11 @@
 ##'
 ##' .. content for \details{} ..
 ##' @title mainSTOCreporting
-##' @param file CHAR nom du fichier des données brut dans le rep donnees
+##' @param file CHAR nom du fichier des donnÃ©es brut dans le rep donnees
 ##' @param fileDataClean CHAR nom du fichier des donnees propre pour ecriture et lecture
-##' @param fileData3sessions CHAR nom du fichier des donnees propre des 3 sessions selectionnées pour ecriture et lecture
-##' @param lastYear NULL ou NUM dernière annees conciderée
-##' @param importationData CHAR parmi c("brut","clean","3sessions","non") permet de selectionné les données importées
+##' @param fileData3sessions CHAR nom du fichier des donnees propre des 3 sessions selectionnÃ©es pour ecriture et lecture
+##' @param lastYear NULL ou NUM derniÃ¨re annees conciderÃ©e
+##' @param importationData CHAR parmi c("brut","clean","3sessions","non") permet de selectionnÃ© les donnÃ©es importÃ©es
 ##' @param all BOOL pour faire les graphes a l'echelle national
 ##' @param local BOOL pour faire les graphes a l'echelle de la station
 ##' @param site NULL ou CHAR[] nom des stations a traiter
@@ -21,13 +21,13 @@
 ##' @param seuilAvorteEvenement NUM nombre de capture min pour valider une session
 ##' @param seuilExclusionDelai NUM nombre de jour min entre 2 sessions
 ##' @param dateRefDefaut NUM[3] 3 date julien de reference des sessions
-##' @param selectedSessionPlot BOOL fabrication des sortie et graphes sessions conservées
+##' @param selectedSessionPlot BOOL fabrication des sortie et graphes sessions conservÃ©es
 ##' @param carte BOOL fabrication des graphes carte
-##' @param abondanceRelative BOOL fabrication des graphes boite à moustache
-##' @param variationAbondance BOOL fabrication des graphes variation d'abondance aggrégé
+##' @param abondanceRelative BOOL fabrication des graphes boite Ã  moustache
+##' @param variationAbondance BOOL fabrication des graphes variation d'abondance aggrÃ©gÃ©
 ##' @param variationAbondanceEspece BOOL fabrication des graphes variation abondance espece
-##' @param productivite BOOL fabrication des graphes productivité aggregé
-##' @param productiviteEspece BOOL fabrication des graphes productivité espece
+##' @param productivite BOOL fabrication des graphes productivitÃ© aggregÃ©
+##' @param productiviteEspece BOOL fabrication des graphes productivitÃ© espece
 ##' @param conditionCorporelle BOOL fabrication des graphes condition coporelle
 ##' @param retour BOOL fabrication des graphes taux de retour
 ##' @param pdf_france BOOL fabrication du pdf national
@@ -67,7 +67,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
     if(is.null(lastYear)) {
 
-        lastYear <- year(Sys.Date())-1
+        lastYear <- year(Sys.Date())
         cat(" lastYear =",lastYear,"\n\n")
     }
 
@@ -206,7 +206,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
             h1 <- Sys.time()
 
-            for(i in 1:2) {
+            for(i in 1:ss) {
                 ss <- as.character(dsite2$site[i])
 
                 catlog(c("\n",i,"/",nbsite," site:",ss,"\n"),fileLog)
@@ -262,7 +262,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
                 productivityYearSpecies.site(d,site=site,col_nomsp = "nom_fr",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
               ##  productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
-## productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = "Pouillot véloce",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
+## productivityYearSpecies.site(d,site=site,species="PHYCOL",nom_sp = "Pouillot vÃ©loce",fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE)
 
             }
 
@@ -280,7 +280,7 @@ mainSTOCreporting <- function(file="Extrait.txt",fileDataClean="data.csv",fileDa
 
               d_body <- bodyCondition.site(d,site=site,community_level=FALSE,species_level=TRUE,species=NULL,nom_sp=NULL,fileLog=fileLog,print.fig=TRUE,save.fig=FALSE,add_title=FALSE,facet=TRUE,return.table=TRUE)
 
-                plot_local_sp(d_body,print.fig=TRUE,save.fig=FALSE,facet_sp=TRUE,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart à la taille moyenne + 1)",x_lab="Année",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear = min(subset(d,NEW.ID_PROG == site)$YEAR)-1,maxYear = max(subset(d,NEW.ID_PROG == site)$YEAR))
+                plot_local_sp(d_body,print.fig=TRUE,save.fig=FALSE,facet_sp=TRUE,facet_group="AGE_first",y_lab="Condition corporelle: Masse/(Ecart Ã  la taille moyenne + 1)",x_lab="AnnÃ©e",title_txt="",vecCol=c("#07307b","#0c5ef6","#c10909","#ea5d18"), minYear = min(subset(d,NEW.ID_PROG == site)$YEAR)-1,maxYear = max(subset(d,NEW.ID_PROG == site)$YEAR))
             }
             if(retour) {
                 catlog(c("\nTAUX DE RETOUR\n"),fileLog)
