@@ -55,3 +55,7 @@ functions/rmd_stoc_reporting_utf8.tex
 functions/rmd_stoc_reporting_utf8.utf8.md
 functions/rmd_stoc_reporting_utf8.log
 *.rmd#
+*.lyr
+*.sbn
+library/tnc_terr_ecoregions.sbx
+*.xml
