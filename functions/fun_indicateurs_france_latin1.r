@@ -1139,14 +1139,11 @@ bodyCondition.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE
     ###########################################  Regions BIOGEO  #########################################################
   if(region){
     if(do.all) {
-      d_siteID <- d
-      d_siteID$ID_PROG <- gsub("[a-z]","",d_siteID$NEW.ID_PROG)
-      
+            
       list.regions = c("ATC","C","LUS","Med","1200")
       list.stations.regions = listStations()
       for (reg in 1:length(list.regions)){
-        dReg <- subset(d_siteID,ID_PROG %in% list.stations.regions[[reg]])
-        dReg <- dReg[-31]
+        dReg <- subset(d,ID_PROG %in% list.stations.regions[[reg]])
         if(nrow(dReg>0)){
           aggTable.MAReg <- aggregate(MA_indice_borne ~ AGE_first + YEAR + HABITAT,subset(dReg,AGE_first!="VOL"),quantile, c(0.025,0.25,0.5,0.75,0.975))
           aggTable.MAReg <- data.frame(aggTable.MAReg[,1:3],aggTable.MAReg[4][[1]][,1:5])
