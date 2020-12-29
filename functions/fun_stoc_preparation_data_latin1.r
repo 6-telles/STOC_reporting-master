@@ -222,7 +222,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ## select year lower and equal to lastYear
 
-    ## de data apres derni�re annee lastYear
+    ## de data apres dernière annee lastYear
     de <- subset(d,YEAR>lastYear)
     if(nrow(de) > 0) {
      de.warning <- data.frame(error = "YEAR",commmentError="hors limit",suppression= "ligne", subset(de,select = selectedColumns))
@@ -477,8 +477,8 @@ import <- function(file="extrait.txt",lastYear=NULL,
     coordinates(altitude) <- ~ LONG2 + LAT2
     proj4string(altitude) <- CRS("+init=epsg:2154") # lambert 93
 
-    ## conversion en Lamber �tendu
-    ## altitude fichier propre de Manon des altitude et des coordonnee import� en debut de script
+    ## conversion en Lamber étendu
+    ## altitude fichier propre de Manon des altitude et des coordonnee importé en debut de script
     altitude <- spTransform(altitude,CRS("+proj=longlat +ellps=WGS84")) #transformation en WGS84
 
     altitude <- data.frame(altitude@data,as.data.frame(altitude@coords))
@@ -987,7 +987,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",llp,"LP seem aberrant\n"),fileLog)
         catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
-        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronqu�e", t.warning.lp)
+        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronquée", t.warning.lp)
         t.warning.lp <-  t.warning.ma[order( t.warning.lp$BAGUE, t.warning.lp$DATE),]
 
         if (file.exists("output_preparation/WARNING_DATA.csv"))
@@ -1251,7 +1251,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ggnf1 <- ggplot(dnf,aes(x=FS,y=FS.DEDUIT,colour=as.factor(YEAR)))+geom_abline(slope=1,intercept = 0,colour="gray")+ coord_fixed(xlim=c(0,400),ylim=c(0,400),ratio=1)
     ggnf1 <- ggnf1 + geom_smooth(method="lm",colour="red")+ annotate("text", label = text.equa,x=80,y=400,size=3,colour="red")+ geom_point()
-    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les donn�es",colour="Ann�es"))
+    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les données",colour="Années"))
 
     ggfile <- paste("output_preparation/estimationFS_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1259,7 +1259,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     catlog(c("\n"),fileLog)
 
 
-    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les donn�es",x="FS.DEDUIT - FS"))
+    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les données",x="FS.DEDUIT - FS"))
 
     ggfile <- paste("output_preparation/estimationFS_histograme_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1399,7 +1399,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     rownames(tDateRef) <- stations
 
 
-   catlog(" 1) Calcul des dates de reference pour les stations � 3 et plus de 4 sessions\n",fileLog)
+   catlog(" 1) Calcul des dates de reference pour les stations à 3 et plus de 4 sessions\n",fileLog)
 
     t.nbSession3 <- subset(t.nbSessionMostFreq,TYPE==3)
     t.nbSessionYear3 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession3$NEW.ID_PROG)
@@ -1441,7 +1441,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
 cat("\n")
 
-    catlog(" 2)  Calcul des dates de reference pour les stations � 4 sessions\n",fileLog)
+    catlog(" 2)  Calcul des dates de reference pour les stations à 4 sessions\n",fileLog)
 
     t.nbSession4 <- subset(t.nbSessionMostFreq,TYPE==4)
     t.nbSessionYear4 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession4$NEW.ID_PROG)
@@ -1578,7 +1578,183 @@ cat("\n")
     catlog(c("\n   --> ",fileSave,"\n"),fileLog)
 
 
+    ########################### Sélection des stations par région ####################################
+    
+    ### Vérification que les dossiers data_ATC, data_C, data_LUS, data_Med et data_1200 ont bien été créés
+    reg <- c("data_ATC","data_C","data_LUS","data_Med","data_1200")
+    for (rep in reg){
+      if (!(rep %in% dir("."))){
+        dir.create(rep)
+      }
+    }
+    
+    ### Création des fichiers historicSession pour chaque région
+    
+    aggSession_siteID <- aggSession
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    aggSession_siteID$ID_PROG <-  gsub("[a-z]","",aggSession_siteID$NEW.ID_PROG)
+    
+    ##Sélection des stations de la région Atlantique central
+    aggSession_ATC <- subset(aggSession_siteID,ID_PROG %in% stationsATC)
+    aggSession_ATC <- aggSession_ATC[,-13]
+    fileSave <- "data_ATC/historicSessionATC.csv"
+    #catlog(c("\n - Historic of session ATC saved in file :\n "),fileLog)
+    write.csv2(aggSession_ATC,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Continentale
+    aggSession_C <- subset(aggSession_siteID,ID_PROG %in% stationsCont)
+    aggSession_C <- aggSession_C[,-13]
+    fileSave <- "data_C/historicSessionC.csv"
+    #catlog(c("\n - Historic of session Continental saved in file :\n "),fileLog)
+    write.csv2(aggSession_C,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Lusitanienne
+    aggSession_LUS <- subset(aggSession_siteID,ID_PROG %in% stationsLUS)
+    aggSession_LUS <- aggSession_LUS[,-13]
+    fileSave <- "data_LUS/historicSessionLUS.csv"
+    #catlog(c("\n - Historic of session LUS saved in file :\n "),fileLog)
+    write.csv2(aggSession_LUS,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Mediterraneenne
+    aggSession_Med <- subset(aggSession_siteID,ID_PROG %in% stationsMed)
+    aggSession_Med <- aggSession_Med[,-13]
+    fileSave <- "data_Med/historicSessionMed.csv"
+    #catlog(c("\n - Historic of session Mediterraneen saved in file :\n "),fileLog)
+    write.csv2(aggSession_Med,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région altitude sup 1200m
+    aggSession_1200 <- subset(aggSession_siteID,ID_PROG %in% stations1200)
+    aggSession_1200 <- aggSession_1200[,-13]
+    fileSave <- "data_1200/historicSession1200.csv"
+    #catlog(c("\n - Historic of session altitude sup 1200m saved in file :\n "),fileLog)
+    write.csv2(aggSession_1200,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    
 
+    ### Création des fichiers SessionReference pour chaque région
+    
+    aggSessionRef_siteID <- aggSessionRef
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    aggSessionRef_siteID$ID_PROG <-  gsub("[a-z]","",aggSessionRef_siteID$NEW.ID_PROG)
+    
+    ##Sélection des stations de la région Atlantique central
+    aggSessionRef_ATC <- subset(aggSessionRef_siteID,ID_PROG %in% stationsATC)
+    aggSessionRef_ATC <- aggSessionRef_ATC[,-4]
+    fileSave <- "data_ATC/SessionReferenceATC.csv"
+    #catlog(c("\n - Historic of session ATC saved in file :\n "),fileLog)
+    write.csv2(aggSessionRef_ATC,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Continentale
+    aggSessionRef_C <- subset(aggSessionRef_siteID,ID_PROG %in% stationsCont)
+    aggSessionRef_C <- aggSessionRef_C[,-4]
+    fileSave <- "data_C/SessionReferenceC.csv"
+    #catlog(c("\n - Historic of session Continental saved in file :\n "),fileLog)
+    write.csv2(aggSessionRef_C,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Lusitanienne
+    aggSessionRef_LUS <- subset(aggSessionRef_siteID,ID_PROG %in% stationsLUS)
+    aggSessionRef_LUS <- aggSessionRef_LUS[,-4]
+    fileSave <- "data_LUS/SessionReferenceLUS.csv"
+    #catlog(c("\n - Historic of session LUS saved in file :\n "),fileLog)
+    write.csv2(aggSessionRef_LUS,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région Mediterraneenne
+    aggSessionRef_Med <- subset(aggSessionRef_siteID,ID_PROG %in% stationsMed)
+    aggSessionRef_Med <- aggSessionRef_Med[,-4]
+    fileSave <- "data_Med/SessionReferenceMed.csv"
+    #catlog(c("\n - Historic of session Mediterraneen saved in file :\n "),fileLog)
+    write.csv2(aggSessionRef_Med,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ##Sélection des stations de la région altitude sup 1200m
+    aggSessionRef_1200 <- subset(aggSession_siteID,ID_PROG %in% stations1200)
+    aggSessionRef_1200 <- aggSessionRef_1200[,-4]
+    fileSave <- "data_1200/SessionReference1200.csv"
+    #catlog(c("\n - Historic of session altitude sup 1200m saved in file :\n "),fileLog)
+    write.csv2(aggSessionRef_1200,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    
+    ### Création des fichiers summarySession pour chaque région
+    
+    ggSession_ID_PROG <- ggSession
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    ggSession_ID_PROG$ID_PROG <-  gsub("[a-z]","",ggSession_ID_PROG$NEW.ID_PROG)
+    
+    ## ATC
+    ggSessionATC <- subset(ggSession_ID_PROG,ID_PROG %in% stationsATC)
+    ggSessionATC <- ggSessionATC[,-5]
+    # Calcul de la date moyenne de chaque session en fonction des années
+    aggAllSessionATC <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSessionATC, quantile,c(0.025,0.25,0.5,0.75,0.975))
+    aggAllSessionATC <- data.frame(aggAllSessionATC[,1:2],aggAllSessionATC[3][[1]][,1:5])
+    colnames(aggAllSessionATC)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+    # Enregistrement du fichier
+    fileSave <- "data_ATC/summarySessionATC.csv"
+    #catlog(c("\n - Summary session historic ATC saved in file :\n "),fileLog)
+    write.csv2(aggAllSessionATC,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ## Continental
+    ggSessionC <- subset(ggSession_ID_PROG,ID_PROG %in% stationsCont)
+    ggSessionC <- ggSessionC[,-5]
+    # Calcul de la date moyenne de chaque session en fonction des années
+    aggAllSessionC <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSessionC, quantile,c(0.025,0.25,0.5,0.75,0.975))
+    aggAllSessionC <- data.frame(aggAllSessionC[,1:2],aggAllSessionC[3][[1]][,1:5])
+    colnames(aggAllSessionC)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+    # Enregistrement du fichier
+    fileSave <- "data_C/summarySessionC.csv"
+    #catlog(c("\n - Summary session historic Continental saved in file :\n "),fileLog)
+    write.csv2(aggAllSessionC,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ## LUS
+    ggSessionLUS <- subset(ggSession_ID_PROG,ID_PROG %in% stationsLUS)
+    ggSessionLUS <- ggSessionLUS[,-5]
+    # Calcul de la date moyenne de chaque session en fonction des années
+    aggAllSessionLUS <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSessionLUS, quantile,c(0.025,0.25,0.5,0.75,0.975))
+    aggAllSessionLUS <- data.frame(aggAllSessionLUS[,1:2],aggAllSessionLUS[3][[1]][,1:5])
+    colnames(aggAllSessionLUS)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+    # Enregistrement du fichier
+    fileSave <- "data_LUS/summarySessionLUS.csv"
+    #catlog(c("\n - Summary session historic Lusitanien saved in file :\n "),fileLog)
+    write.csv2(aggAllSessionLUS,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ## Mediterraneen
+    ggSessionMed <- subset(ggSession_ID_PROG,ID_PROG %in% stationsMed)
+    ggSessionMed <- ggSessionMed[,-5]
+    # Calcul de la date moyenne de chaque session en fonction des années
+    aggAllSessionMed <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSessionMed, quantile,c(0.025,0.25,0.5,0.75,0.975))
+    aggAllSessionMed <- data.frame(aggAllSessionMed[,1:2],aggAllSessionMed[3][[1]][,1:5])
+    colnames(aggAllSessionMed)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+    # Enregistrement du fichier
+    fileSave <- "data_Med/summarySessionMed.csv"
+    #catlog(c("\n - Summary session historic Mediterraneen saved in file :\n "),fileLog)
+    write.csv2(aggAllSessionMed,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+    ## 1200 
+    ggSession1200 <- subset(ggSession_ID_PROG,ID_PROG %in% stations1200)
+    ggSession1200 <- ggSession1200[,-5]
+    # Calcul de la date moyenne de chaque session en fonction des années
+    aggAllSession1200 <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSession1200, quantile,c(0.025,0.25,0.5,0.75,0.975))
+    aggAllSession1200 <- data.frame(aggAllSession1200[,1:2],aggAllSession1200[3][[1]][,1:5])
+    colnames(aggAllSession1200)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+    # Enregistrement du fichier
+    fileSave <- "data_1200/summarySession1200.csv"
+    #catlog(c("\n - Summary session historic altitude sup 1200m saved in file :\n "),fileLog)
+    write.csv2(aggAllSession1200,fileSave,row.names=FALSE,na="",quote=FALSE)
+    #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+    
+##########################################################################################################################################################
 
    catlog(c("\n====================================\n\n - the 3 sessions selection\n------------------------------------\n"),fileLog)
 
