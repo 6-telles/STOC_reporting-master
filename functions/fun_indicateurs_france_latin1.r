@@ -1339,7 +1339,7 @@ returnRate.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,se
                   
                   if (h == vecHab[1]) aggTableAll.totReg <- aggTableReg else aggTableAll.totReg <- rbind(aggTableAll.totReg,aggTableReg)
                   
-                  if (h==habitats[3] | length(habitats)==1){
+                  if (h==vecHab[3] | length(vecHab)==1){
                     
                     gg <- ggplot(subset(aggTableAll.totReg,HABITAT==h & MIGRATION != ""),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+ facet_grid(AGE_first~MIGRATION,scale="free_y")
                     gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
@@ -1368,7 +1368,7 @@ returnRate.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,se
                     #catlog(c("  -> ",file,"\n"),fileLog)
                     write.csv2(aggTableAll.totReg,file,row.names=FALSE)
                   }
-                } # END if h==habitats[3]  
+                } # END if h==vecHab[3]  
               } # END for regions 
             } # END if region
             ####################################################################################
@@ -1443,7 +1443,7 @@ returnRate.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,se
                   
                   if(h == vecHab[1]) aggTableSP.totReg <- aggTableSPReg else aggTableSP.totReg <- rbind(aggTableSP.totReg,aggTableSPReg)
                   
-                  if (h==habitats[3] | length(habitats)==1){
+                  if (h==vecHab[3] | length(vecHab)==1){
                     gg <- ggplot(subset(aggTableSP.totReg,HABITAT==h),aes(x=YEAR,y=med,colour=MIGRATION,fill=MIGRATION))+facet_grid(SP~AGE_first)
                     gg <- gg + geom_ribbon(aes(ymin=CIinf,ymax=CIsup),alpha=.4,colour = NA)
                     gg <- gg + geom_line(size=1.5,alpha=.8)
@@ -1470,7 +1470,7 @@ returnRate.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,se
                     #catlog(c("  -> ",file,"\n"),fileLog)
                     write.csv2(aggTableSP.totReg,file,row.names=FALSE)
                   }
-                } # END if h==habitats[3]
+                } # END if h==vecHab[3]
                 
               } # END for regions  
             } # END if region
