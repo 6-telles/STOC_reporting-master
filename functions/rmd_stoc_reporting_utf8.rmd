@@ -134,7 +134,7 @@ quelques indicateurs graphiques issus du STOC-Capture les variations
 temporelles d'état et de fonctionnement des populations d'oiseaux
 communs en contrastant la station d'intérêt faisant
 l'objet du rapport (la station `r site`)  avec  un ensemble de
-stations servant de réfèrence.
+stations servant de référence.
 
 Ces indicateurs ont vocation à documenter les variations, entre années
 et groupes de stations, de la taille des populations, de la production
@@ -158,24 +158,38 @@ stations, et est perçu au niveau des groupes références).
 
 ## La station `r site`
 
-Afin de permettre des comparaisons avec une référence nationale
-ad-hoc les stations ont été classées en trois groupes et seront
-comparées aux autres stations du même groupe: 
+Afin de permettre des comparaisons avec une référence régionale
+ad-hoc les stations ont été classées en cinq régions et trois groupes et seront
+comparées aux autres stations de même région et même groupe: 
 
+Régions
+-Atlantique central
+-Continental
+-Lusitanien
+-Méditérranéen
+-Stations situées à une altitude supérieure à 1 200 mètres
+
+Groupes
 - Terrestre : Stations dont moins de 50\% des individus capturés sont
   des oiseaux paludicoles 
 - Aquatique : Stations dont plus de 50\% des individus capturés sont
   des oiseaux paludicoles 
 - Rozo : Stations réalisant le protocole spécifique STOC-ROZO
 
+(figure __\ref{fig:carte_reg}__)
+```{r Regions_biogeo, eval=TRUE,fig.align = 'center', out.width='100%',fig.cap=paste("\\label{fig:carte}Localisation de la station",site,"en rouge"),fig.scap="La localisation de la station"} 
 
-Ainsi la station `r site` de type `r hab_txt` est comparée au sous-ensemble des stations
-STOC-Capture du type `r hab_txt` et qui ont été en activité en même
+carteStation(site=site,d=d,add_local=FALSE,fileLog=fileLog,print.fig=TRUE,save.fig=save.fig,add_title=FALSE)
+ 
+```
+
+Ainsi la station `r site` de type `r hab_txt` de la région `r reg_txt` est comparée au sous-ensemble des stations
+STOC-Capture du type `r hab_txt` de la région `r reg_txt` qui ont été en activité en même
 temps (figure __\ref{fig:carte}__). 
 
 
 
-```{r fig.carte, eval=TRUE,fig.align = 'center', out.width='100%',fig.cap=paste("\\label{fig:carte}Localisation de la stations",site,"en rouge et des stations de même type en dégradé de bleu présentant le nombre d'année de données disponibles pour la comparaison. Les stations notées par un petit cercle vide sont les stations qui ne sont pas utilisables pour caractériser la référence nationale"),fig.scap="La localisation de la station"} 
+```{r fig.carte, eval=TRUE,fig.align = 'center', out.width='100%',fig.cap=paste("\\label{fig:carte}Localisation de la station",site,"en rouge et des stations de même type en dégradé de bleu présentant le nombre d'année de données disponibles pour la comparaison. Les stations notées par un petit cercle vide sont les stations qui ne sont pas utilisables pour caractériser la référence nationale"),fig.scap="La localisation de la station"} 
 
 carteStation(site=site,d=d,add_local=FALSE,fileLog=fileLog,print.fig=TRUE,save.fig=save.fig,add_title=FALSE)
  
@@ -217,7 +231,7 @@ conservées que les captures du matin c'est-à-dire de 4h à 15h.
 
 __Si seules 3 sessions sont retenues, il demeure nécessaire que les
 protocoles de suivi des sites STOC-Capture restent inchangés (par
-exemple : si il y a des sessions supplémentaires, longueur de filet
+exemple : s'il y a des sessions supplémentaires, longueur de filet
 supérieures, etc).__
 
 
@@ -233,8 +247,8 @@ sessions nous ne retenons que les sessions les plus proches des dates
 des 3 sessions les plus fréquentes à l'échelle nationale. Cette
 recherche tient compte du décalage qui est demandé aux stations de
 montagne et de la région méditerranéenne. 
-- Les dates des 3 sessions doivent, année après année, rester, le plus
-  stable possible au sein de chaque station. Seules les sessions dont 
+- Les dates des 3 sessions doivent, année après année, rester, les plus
+  stables possible au sein de chaque station. Seules les sessions dont 
   les dates sont éloignées de moins de 16 jours d'une des 3 dates de
   référence (calculées sur l'ensemble des dates des sessions) sont
   conservées. S'il y a plusieurs dates, nous choisissons la date la
@@ -261,19 +275,19 @@ Le dernier niveau de standardisation considère la longueur de filets
 utilisée. Celle-ci étant variable entre les différentes stations, le
 nombre de captures a été ramené à une longueur théorique de 120 mètres
 de filets. Pour résumer, par printemps, nous retenons 3 sessions, au cours
-desquelles calcule les valeurs pour 120 mètres de filet déployés sur une matinée.
+desquelles nous calculons les valeurs pour 120 mètres de filet déployés sur une matinée.
 
 Cependant il arrive que la longueur de filet utilisé ne soit pas
 renseigné dans la base de données. C'est principalement le cas pour
-les données historique. 
+les données historiques. 
 
-Afin de pouvoir standardisé ces données, nous estimons la longueur de
-filets utilisé à partir de numéros de filet présent sur la station en
-considérant que tous les filets mesure 12 mètres (ce que recommande le
+Afin de pouvoir standardiser ces données, nous estimons la longueur de
+filets utilisée à partir de numéros de filet présent sur la station en
+considérant que tous les filets mesurent 12 mètres (ce que recommande le
 protocole). 
 
 Les longueurs de filets utilisées pour standardiser les captures sont
-noté dans la table __\ref{tab:sf}__.
+notées dans la table __\ref{tab:sf}__.
 
 
 ```{r tab.fs, eval= TRUE, result ='asis'}
@@ -295,13 +309,13 @@ kable(d_session,"latex", caption=paste0("Les longueurs de filets lors des sessio
 
 
 ## Condition de calcul des indicateurs
-Les seuils conditionnant le calcul des indicateurs ont été établi
+Les seuils conditionnant le calcul des indicateurs ont été établis
 comme suit :
 
 
 Indicateur  | Seuils appliqués
 ------------- | -------------
-Indice d'abondance | Au moins 5 individus adultes de l'espèce capturées \ sur l'ensemble des années
+Indice d'abondance | Au moins 5 individus adultes de l'espèce capturée \ sur l'ensemble des années
 Indice de productivité | Nombre médian par station d'individus \ supérieur ou égal à 5 sur l'ensemble des \ années de suivi 
 Indice de condition corporelle | Nombre médian par station d'individus \ supérieur ou égal à 10 sur l'ensemble des \ années de suivi 
 Indice de taux de retour | Nombre médian par station d'individus \ supérieur ou égal à 10  sur l'ensemble des années \  de suivi
@@ -332,7 +346,7 @@ indicateurs (figure __\ref{fig:ref}__).
   valeurs de l'indicateur  autour de la médiane.
 - L'intervalle des 95\% représente l'intervalle qui contient 95\% des
   valeurs de l'indicateur  autour de la médiane.
-- Au-delà des 95\% il reste donc 5\% des données que l'on considére
+- Au-delà des 95\% il reste donc 5\% des données que l'on considère
   comme les valeurs extrêmes et que nous ne représentons pas pour la
   référence nationale.
   
@@ -340,7 +354,7 @@ indicateurs (figure __\ref{fig:ref}__).
   
 Pour chaque indicateur nous proposons dans un premier temps un indice
 pour l'ensemble de la communauté d'espèce, regroupant toutes les
-espèces quelle que soit leurs abondances. Cette analyse à l'échelle de
+espèces quelles que soient leurs abondances. Cette analyse à l'échelle de
 la communauté est pertinente biologiquement, mais aussi
 statistiquement car plus de la moitié des espèces sont capturées en
 trop faible nombre pour permettre de caractériser leur fonctionnement
@@ -349,8 +363,8 @@ spécifique.
 Dans un second temps nous proposons les indices par espèce,
 calculés pour les espèces pour lesquelles le nombre de données est
 considéré suffisant (cf. seuils évoqués plus haut). Ce second indicateur permet une
-analyse l'échelle de chaque espèce. Il a pour but d'identifier, lorsque c'est le
-cas, la ou les espéce(s) responsable(s) de ce que l'on observe au
+analyse à l'échelle de chaque espèce. Il a pour but d'identifier, lorsque c'est le
+cas, la ou les espèce(s) responsable(s) de ce que l'on observe au
 niveau de la communauté d'espèce. 
 
 
@@ -371,11 +385,11 @@ des figures des indicateurs au regard des variations temporelles nationales}
 ## La communauté échantillonée
 
 Ici nous considérons toutes les espèces capturées sur la station `r site`. La
-figure __\ref{fig:com}__ reprèsente la constitution de la
+figure __\ref{fig:com}__ représente la constitution de la
 communauté locale et leurs effectifs
 capturés. Elle montre également la distribution des captures de
-ces espéces dans les stations de même type (parmi les stations
-qui capturent l'espéce). Ainsi la figure __\ref{fig:com}__
+ces espèces dans les stations de même type (parmi les stations
+qui capturent l'espèce). Ainsi la figure __\ref{fig:com}__
 permet d'apprécier les paricularités de la station.
 
 
@@ -411,7 +425,7 @@ des variations de survie, de reproduction et de dispersion entre
 années. 
 Cet indice d'abondance est
 calculé à partir des captures d'adultes et est standardisé pour
-correspondre aux captures sur 3 sessions par 120 métres de filets.
+correspondre aux captures sur 3 sessions par 120 mètres de filets.
 
 
 
@@ -490,8 +504,8 @@ if(fig_sp) abundanceSpeciesYear.site(d,site=site,species=vec_sp,nom_sp=sp_nom,fi
 ## L'indice de productivité
 
 L'indice de productivité correspond au nombre de jeunes produits par
-adulte. Il refléte les effets des conditions environnementales sur la
-reproduction et la survie jusqu'à l'envol (à nombre d'adultes égaux,
+adulte. Il reflète les effets des conditions environnementales sur la
+reproduction et la survie jusqu'à l'envol (à nombres d'adultes égaux,
 donc indépendamment des fluctuations de taille de population
 reproductrice). Il renseigne ainsi sur la variation de la qualité de
 l'habitat pour la reproduction des passereaux communs.
@@ -505,11 +519,11 @@ par le nombre d'adultes (capturés sur les 3 sessions) tel que :
 \end{equation}
 
 Enfin cet indice est tout d'abord calculé de façon globale pour la
-communauté en regroupant les espéces selon le typ e de migration
+communauté en regroupant les espèces selon le type de migration
 qu'elles réalisent ("_Court_" pour à courte distance, "_Long_" pour à
 longue distance, voir la figure __\ref{fig:prod}__). En effet, la
 productivité documentée étant très différente entre les migrateurs à
-longue distance (transsahariens) et les autres espéces, l'indice de
+longue distance (transsahariens) et les autres espèces, l'indice de
 productivité est calculé séparément pour ces deux groupes
 d'espèces. 
 
@@ -587,7 +601,7 @@ if(fig_sp)
 
 En période de reproduction, la condition corporelle des individus est principalement influencée par les conditions météorologiques et la disponibilité alimentaire au cours des semaines et mois passés, qui affectent la ration alimentaire des jeunes et la condition physique des adultes qui nourrissent les jeunes. \\
 
-L'indice est calculé de façon globale pour la communauté regroupant les individus selon deux classes d'âge (juvénile et adulte ; figure __\ref{fig:bc}__) tel que la condition corporelle d'un individu $i$ est la standardisation de sa masse $M_i$ par la masse de moyenne $\bar{m}$  de son espéce $s$ et de sa classe d'âge $a$ comme suit: 
+L'indice est calculé de façon globale pour la communauté regroupant les individus selon deux classes d'âge (juvénile et adulte ; figure __\ref{fig:bc}__) telles que la condition corporelle d'un individu $i$ est la standardisation de sa masse $M_i$ par la masse de moyenne $\bar{m}$  de son espéce $s$ et de sa classe d'âge $a$ comme suit: 
 
 \begin{equation}
 \textit{Condition corporelle}_i =  \frac{M_{i,s,a} -\bar{m}_{s,a}}{\bar{m}_{s,a}}
