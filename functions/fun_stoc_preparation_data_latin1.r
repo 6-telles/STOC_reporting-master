@@ -222,7 +222,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ## select year lower and equal to lastYear
 
-    ## de data apres derni�re annee lastYear
+    ## de data apres dernière annee lastYear
     de <- subset(d,YEAR>lastYear)
     if(nrow(de) > 0) {
      de.warning <- data.frame(error = "YEAR",commmentError="hors limit",suppression= "ligne", subset(de,select = selectedColumns))
@@ -477,8 +477,8 @@ import <- function(file="extrait.txt",lastYear=NULL,
     coordinates(altitude) <- ~ LONG2 + LAT2
     proj4string(altitude) <- CRS("+init=epsg:2154") # lambert 93
 
-    ## conversion en Lamber �tendu
-    ## altitude fichier propre de Manon des altitude et des coordonnee import� en debut de script
+    ## conversion en Lamber étendu
+    ## altitude fichier propre de Manon des altitude et des coordonnee importé en debut de script
     altitude <- spTransform(altitude,CRS("+proj=longlat +ellps=WGS84")) #transformation en WGS84
 
     altitude <- data.frame(altitude@data,as.data.frame(altitude@coords))
@@ -987,7 +987,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     {
         catlog(c(" !!! WARNING MESSAGE:",llp,"LP seem aberrant\n"),fileLog)
         catlog(c(" ==> Check WARNING_DATA.csv in output_preparation/ directory !!\n"),fileLog)
-        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronqu�e", t.warning.lp)
+        t.warning.lp <- data.frame(error = "LP aberrante", commmentError="",suppression= "Valeur tronquée", t.warning.lp)
         t.warning.lp <-  t.warning.ma[order( t.warning.lp$BAGUE, t.warning.lp$DATE),]
 
         if (file.exists("output_preparation/WARNING_DATA.csv"))
@@ -1251,7 +1251,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
 
     ggnf1 <- ggplot(dnf,aes(x=FS,y=FS.DEDUIT,colour=as.factor(YEAR)))+geom_abline(slope=1,intercept = 0,colour="gray")+ coord_fixed(xlim=c(0,400),ylim=c(0,400),ratio=1)
     ggnf1 <- ggnf1 + geom_smooth(method="lm",colour="red")+ annotate("text", label = text.equa,x=80,y=400,size=3,colour="red")+ geom_point()
-    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les donn�es",colour="Ann�es"))
+    ggnf1 <- ggnf1 + labs(list(title="Estimation de FS a partir des toutes les données",colour="Années"))
 
     ggfile <- paste("output_preparation/estimationFS_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1259,7 +1259,7 @@ import <- function(file="extrait.txt",lastYear=NULL,
     catlog(c("\n"),fileLog)
 
 
-    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les donn�es",x="FS.DEDUIT - FS"))
+    ggnf2 <- ggplot(dnf,aes(x=DIFF)) + geom_histogram(binwidth = 12) + labs(list(title="Distribution de FS.DEDUIT - FS pour toute les données",x="FS.DEDUIT - FS"))
 
     ggfile <- paste("output_preparation/estimationFS_histograme_all.png",sep="")
     catlog(c("Check",ggfile,":"),fileLog)
@@ -1399,7 +1399,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
     rownames(tDateRef) <- stations
 
 
-   catlog(" 1) Calcul des dates de reference pour les stations � 3 et plus de 4 sessions\n",fileLog)
+   catlog(" 1) Calcul des dates de reference pour les stations à 3 et plus de 4 sessions\n",fileLog)
 
     t.nbSession3 <- subset(t.nbSessionMostFreq,TYPE==3)
     t.nbSessionYear3 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession3$NEW.ID_PROG)
@@ -1441,7 +1441,7 @@ select3sessions <- function(d,fileDataClean="data3session.csv",fileLog="log.txt"
 
 cat("\n")
 
-    catlog(" 2)  Calcul des dates de reference pour les stations � 4 sessions\n",fileLog)
+    catlog(" 2)  Calcul des dates de reference pour les stations à 4 sessions\n",fileLog)
 
     t.nbSession4 <- subset(t.nbSessionMostFreq,TYPE==4)
     t.nbSessionYear4 <- subset(t.nbSession,NEW.ID_PROG %in% t.nbSession4$NEW.ID_PROG)
@@ -1578,7 +1578,72 @@ cat("\n")
     catlog(c("\n   --> ",fileSave,"\n"),fileLog)
 
 
+    ########################### Sélection des stations par région ####################################
+    
+     ### Vérification que les dossiers data_ATC, data_C, data_LUS, data_Med et data_1200 ont bien été créés
+    reg <- c("data_ATC","data_C","data_LUS","data_Med","data_1200")
+    for (rep in reg){
+      if (!(rep %in% dir("."))){
+        dir.create(rep)
+      }
+    }
+    
+    ### Création des fichiers historicSession pour chaque région
+    list.regions = c("ATC","C","LUS","Med","1200")
+    list.noms.regions = c("Atlantique_central","Continental","Lusitanien","Mediterraneen","Altitude_sup_1200m")
 
+    ## historicSession
+    aggSession_siteID <- aggSession
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    aggSession_siteID$ID_PROG <-  gsub("[a-z]","",aggSession_siteID$NEW.ID_PROG)
+    
+    ## SessionReference
+    aggSessionRef_siteID <- aggSessionRef
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    aggSessionRef_siteID$ID_PROG <-  gsub("[a-z]","",aggSessionRef_siteID$NEW.ID_PROG)
+    
+    ### summarySession 
+    ggSession_ID_PROG <- ggSession
+    ## ajoute une colonne ID_PROG à partir de NEW.ID_PROG
+    ggSession_ID_PROG$ID_PROG <-  gsub("[a-z]","",ggSession_ID_PROG$NEW.ID_PROG)
+    
+    
+    
+    for (reg in 1:length(list.regions)){
+      
+      ## historicSession
+      aggSessionReg <- subset(aggSession_siteID,ID_PROG %in% listStations()[[reg]])
+      aggSessionReg <- aggSessionReg[,-13]
+      fileSave <- paste0("data_",list.regions[reg],"/historicSession",list.regions[reg],".csv")
+      #catlog(c(paste0("\n - Historic of session ",ATC,"  saved in file :\n "),fileLog)
+      write.csv2(aggSessionReg,fileSave,row.names=FALSE,na="",quote=FALSE)
+      #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+      
+      ## SessionReference
+      aggSessionRefReg <- subset(aggSessionRef_siteID,ID_PROG %in% listStations()[[reg]])
+      aggSessionRefReg <- aggSessionRefReg[,-4]
+      fileSave <- paste0("data_",list.regions[reg],"/SessionReference",list.regions[reg],".csv")
+      #catlog(c(paste0("\n - Historic of session ",ATC," saved in file :\n ")),fileLog)
+      write.csv2(aggSessionRefReg,fileSave,row.names=FALSE,na="",quote=FALSE)
+      #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+      
+      ## summarySession
+      ggSessionReg <- subset(ggSession_ID_PROG,ID_PROG %in% listStations()[[reg]])
+      ggSessionReg <- ggSessionReg[,-5]
+      # Calcul de la date moyenne de chaque session en fonction des années
+      aggAllSessionReg <- aggregate(JULIANDAY ~ (YEAR + SESSION), data= ggSessionReg, quantile,c(0.025,0.25,0.5,0.75,0.975))
+      aggAllSessionReg <- data.frame(aggAllSessionReg[,1:2],aggAllSessionReg[3][[1]][,1:5])
+      colnames(aggAllSessionReg)[3:7] <- c("CIinf","CIquart_inf","med","CIquart_sup","CIsup")
+      # Enregistrement du fichier
+      fileSave <- paste0("data_",list.regions[reg],"/summarySession",list.regions[reg],".csv")
+      #catlog(c(paste0("\n - Summary session historic ",list.regions[reg]," saved in file :\n ")),fileLog)
+      write.csv2(aggAllSessionReg,fileSave,row.names=FALSE,na="",quote=FALSE)
+      #catlog(c("\n   --> ",fileSave,"\n"),fileLog)
+      
+    }
+    
+    
+##########################################################################################################################################################
 
    catlog(c("\n====================================\n\n - the 3 sessions selection\n------------------------------------\n"),fileLog)
 
