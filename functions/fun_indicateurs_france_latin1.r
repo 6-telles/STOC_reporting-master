@@ -147,7 +147,7 @@ carteAll <- function(d,fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,sa
 
 
 
-speciesRelativeAbund.all <- function(d,region=FALSE, fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
+speciesRelativeAbund.all <- function(d,region=TRUE, fileLog=NULL, habitat=NULL,print=TRUE, print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE) {
     require(ggplot2)
     dsp <- read.csv2("library/sp.csv",stringsAsFactors=FALSE)
 
@@ -362,7 +362,7 @@ speciesRelativeAbund.all <- function(d,region=FALSE, fileLog=NULL, habitat=NULL,
 ##' @return
 ##' @author Romain Lorrilliere
 ##'
-abundanceYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+abundanceYear.all <- function(d,region=TRUE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
     require(ggplot2)
 
@@ -514,7 +514,7 @@ abundanceYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",prin
 
 
 
-abundanceSpeciesYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+abundanceSpeciesYear.all <- function(d,region=TRUE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
     require(ggplot2)
 
@@ -751,7 +751,7 @@ abundanceSpeciesYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.tx
 ##' @return
 ##' @author Romain Lorrilliere
 
-productivityYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+productivityYear.all <- function(d,region=TRUE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
     require(ggplot2)
 ###d <- read.csv2("output/data.csv")
@@ -876,7 +876,7 @@ productivityYear.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",p
 
 
 
-productivityYearSpecies.all <- function(d,region=FALSE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+productivityYearSpecies.all <- function(d,region=TRUE,habitat=NULL,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
     require(ggplot2)
 ### d <- read.csv2("output/data.csv",stringsAsFactors=FALSE)
@@ -1034,7 +1034,7 @@ productivityYearSpecies.all <- function(d,region=FALSE,habitat=NULL,fileLog="log
 
 
 
-bodyCondition.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceAnnee=50,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+bodyCondition.all <- function(d,region=TRUE,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceAnnee=50,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
 
     require(ggplot2)
@@ -1269,7 +1269,7 @@ bodyCondition.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE
 
 
 
-returnRate.all <- function(d,region=FALSE,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceAnnee=30,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
+returnRate.all <- function(d,region=TRUE,habitat=NULL,do.all=TRUE,do.sp=TRUE,seuilAbondanceAnnee=30,fileLog="log.txt",print.fig=FALSE,save.fig=TRUE,save.data_france=TRUE)
 {
     require(ggplot2)
 
