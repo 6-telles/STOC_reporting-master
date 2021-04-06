@@ -5,7 +5,7 @@ ip <- installed.packages()[,1]
 
 for(p in vecPackage){
     if (!(p %in% ip))
-        install.packages(pkgs=p,repos = "http://cran.univ-paris1.fr/",dependencies=TRUE)
+        install.packages(pkgs=p,repos = "https://cran.biotools.fr/",dependencies=TRUE)
 library(p,character.only=TRUE)
 }
 
