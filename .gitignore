@@ -59,3 +59,5 @@ functions/rmd_stoc_reporting_utf8.log
 *.sbn
 library/tnc_terr_ecoregions.sbx
 *.xml
+*.csv
+*.cpg
